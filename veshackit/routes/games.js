@@ -8,10 +8,10 @@ const router = express.Router();
 // ✅ Start a new game session
 router.post("/start", authMiddleware, async (req, res) => {
   try {
-    const { gameId } = req.body;
+    const { gameId, gameName, startLevel } = req.body;
 
-    if (!gameId) {
-      return res.status(400).json({ msg: "Game ID is required" });
+    if (!gameId || !gameName) {
+      return res.status(400).json({ msg: "Game ID and Game Name are required." });
     }
 
     // ✅ Create a new session entry
@@ -19,8 +19,12 @@ router.post("/start", authMiddleware, async (req, res) => {
       sessionId: uuidv4(), // Generate unique session ID
       user: req.user.id,
       gameId,
+      gameName,
+      startLevel: startLevel || 1, // Default to level 1
+      endLevel: startLevel || 1, // Start and end at same level initially
+      totalTime: "0s", // Default time
       score: 0, // Initial score
-      mistakes: 0, // ✅ Start with zero mistakes
+      mistakes: 0, // Start with zero mistakes
       completed: false,
     });
 
@@ -36,13 +40,13 @@ router.post("/start", authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ Save game progress
+// ✅ Save game progress (with levels & time)
 router.post("/progress", authMiddleware, async (req, res) => {
   try {
-    const { sessionId, score, completed, mistakes } = req.body;
+    const { sessionId, score, completed, mistakes, endLevel, totalTime } = req.body;
 
-    if (!sessionId || score === undefined || completed === undefined || mistakes === undefined) {
-      return res.status(400).json({ msg: "Session ID, score, mistakes, and completion status are required." });
+    if (!sessionId || score === undefined || completed === undefined || mistakes === undefined || !endLevel || !totalTime) {
+      return res.status(400).json({ msg: "All fields (sessionId, score, mistakes, completed, endLevel, totalTime) are required." });
     }
 
     // ✅ Find the existing session
@@ -54,8 +58,11 @@ router.post("/progress", authMiddleware, async (req, res) => {
 
     // ✅ Update progress
     progress.score = score;
-    progress.mistakes = mistakes; // ✅ Update mistakes
+    progress.mistakes = mistakes; 
     progress.completed = completed;
+    progress.endLevel = endLevel; // ✅ Store final level reached
+    progress.totalTime = totalTime; // ✅ Store total time spent
+
     await progress.save();
 
     res.status(200).json({ msg: "Progress updated successfully!", progress });
@@ -71,7 +78,7 @@ router.get("/progress", authMiddleware, async (req, res) => {
     const progress = await Progress.find({ user: req.user.id });
 
     if (!progress.length) {
-      return res.status(404).json({ msg: "No progress found" });
+      return res.status(404).json({ msg: "No progress found." });
     }
 
     res.json(progress);

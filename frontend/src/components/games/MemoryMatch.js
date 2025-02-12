@@ -24,7 +24,11 @@ const MemoryMatch = () => {
   const [gameOver, setGameOver] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [mistakes, setMistakes] = useState(0);
-  const hasStartedSession = useRef(false); // Prevent duplicate session creation
+  const [startLevel] = useState(1); // Default start level
+  const [endLevel, setEndLevel] = useState(1);
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const timerRef = useRef(null);
+  const hasStartedSession = useRef(false);
 
   const token = localStorage.getItem("token");
 
@@ -32,7 +36,7 @@ const MemoryMatch = () => {
     try {
       const response = await axios.post(
         "http://localhost:5000/api/games/start",
-        { gameId: "memory_match" },
+        { gameId: "memory_match", gameName: "Memory Match", startLevel },
         { headers: { "x-auth-token": token, "Content-Type": "application/json" } }
       );
       setSessionId(response.data.sessionId);
@@ -40,17 +44,26 @@ const MemoryMatch = () => {
     } catch (error) {
       console.error("Error starting session:", error.response?.data || error.message);
     }
-  }, [token]);
+  }, [token, startLevel]);
 
   useEffect(() => {
     setCards(shuffledCards());
     setMistakes(0);
+    setTimeElapsed(0);
+    setEndLevel(startLevel);
 
     if (!sessionId && !hasStartedSession.current) {
-      hasStartedSession.current = true; // Mark as executed
+      hasStartedSession.current = true;
       startNewSession();
     }
-  }, [startNewSession, sessionId]);
+
+    // Start the game timer
+    timerRef.current = setInterval(() => {
+      setTimeElapsed((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timerRef.current); // Cleanup timer on unmount
+  }, [startNewSession, sessionId, startLevel]);
 
   useEffect(() => {
     if (flippedCards.length === 2) {
@@ -58,7 +71,7 @@ const MemoryMatch = () => {
       if (first.name === second.name) {
         setMatchedCards((prev) => [...prev, first.name]);
       } else {
-        setMistakes((prev) => prev + 1); // Track mistakes
+        setMistakes((prev) => prev + 1);
       }
       setTimeout(() => setFlippedCards([]), 800);
     }
@@ -72,7 +85,9 @@ const MemoryMatch = () => {
       gameId: "memory_match",
       score: matchedCards.length,
       completed: true,
-      mistakes, // Send mistakes count
+      mistakes,
+      endLevel,
+      totalTime: `${timeElapsed}s`, // Send total time in seconds
     };
 
     console.log("Sending progress data:", payload);
@@ -87,15 +102,17 @@ const MemoryMatch = () => {
     } catch (error) {
       console.error("Error saving progress:", error.response?.data || error.message);
     }
-  }, [matchedCards, sessionId, token, mistakes]);
+  }, [matchedCards, sessionId, token, mistakes, endLevel, timeElapsed]);
 
   useEffect(() => {
-    if (matchedCards.length === cardImages.length) {
+    if (matchedCards.length === cardImages.length && !gameOver) {
       setGameOver(true);
+      clearInterval(timerRef.current); // Stop timer
+      setEndLevel((prev) => prev + 1); // Increment level
       sendProgressToBackend();
     }
-  }, [matchedCards, sendProgressToBackend]);
-
+  }, [matchedCards, sendProgressToBackend, gameOver]);
+  
   const handleCardClick = (card) => {
     if (
       flippedCards.length < 2 &&
@@ -113,18 +130,23 @@ const MemoryMatch = () => {
     setGameOver(false);
     setMistakes(0);
     setSessionId(null);
-    hasStartedSession.current = false; // Reset session tracking
+    setTimeElapsed(0);
+    hasStartedSession.current = false;
     startNewSession();
   };
 
   return (
     <div className="memory-container">
       <h2>Memory Match Game</h2>
-      <p>Mistakes: {mistakes}</p> {/* Display mistake count */}
+      <p>⏳ Time: {timeElapsed}s</p>
+      <p>❌ Mistakes: {mistakes}</p>
+      <p>🏆 Level: {endLevel}</p>
+
       {gameOver ? (
         <>
           <h3 className="game-over">🎉 You won! Play again?</h3>
-          <p>Total Mistakes: {mistakes}</p> {/* Show mistakes at end of game */}
+          <p>⏳ Total Time: {timeElapsed}s</p>
+          <p>❌ Total Mistakes: {mistakes}</p>
           <button className="restart-btn" onClick={restartGame}>
             Restart Game 🔄
           </button>
@@ -134,16 +156,10 @@ const MemoryMatch = () => {
           {cards.map((card) => (
             <div
               key={card.id}
-              className={`card ${
-                flippedCards.includes(card) || matchedCards.includes(card.name)
-                  ? "flipped"
-                  : ""
-              }`}
+              className={`card ${flippedCards.includes(card) || matchedCards.includes(card.name) ? "flipped" : ""}`}
               onClick={() => handleCardClick(card)}
             >
-              {flippedCards.includes(card) || matchedCards.includes(card.name)
-                ? card.name
-                : "❓"}
+              {flippedCards.includes(card) || matchedCards.includes(card.name) ? card.name : "❓"}
             </div>
           ))}
         </div>
