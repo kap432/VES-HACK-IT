@@ -8,6 +8,7 @@ import DoctorDashboard from "./components/DoctorDashboard";
 import MemoryMatch from "./components/games/MemoryMatch";
 import MathQuiz from "./components/games/MathQuiz";
 import WordScramble from "./components/games/WordScramble";
+import Chatroom from "./components/chatroom";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/games/1" element={<MemoryMatch />} />
         <Route path="/games/2" element={<MathQuiz />} />
         <Route path="/games/3" element={<WordScramble />} />
+        <Route path="/Chatroom" element={<Chatroom />} /> {/* Chatroom route */}
       </Routes>
     </Router>
   );

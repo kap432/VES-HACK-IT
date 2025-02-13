@@ -122,10 +122,7 @@ const PatientDashboard = () => {
                 {games.map((game) => (
                   <div className="game-card" key={game.id}>
                     <img
-                      src={
-                        game.image ||
-                        `/game_${game.id}.jpeg`
-                      }
+                      src={game.image || `/game_${game.id}.jpeg`}
                       alt={game.title}
                     />
                     <h4>{game.title}</h4>
@@ -140,6 +137,14 @@ const PatientDashboard = () => {
               <p>No games available.</p>
             )}
           </section>
+
+          <div className="chatroom-card">
+            <h2>Join the Chatroom</h2>
+            <p>Connect with others and discuss freely.</p>
+            <button onClick={() => navigate("/chatroom")}>
+              Enter Chatroom
+            </button>
+          </div>
 
           {/* Progress Graph Section */}
           <section className="progress-section">
