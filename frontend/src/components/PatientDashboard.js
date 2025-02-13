@@ -1,3 +1,4 @@
+// frontend/src/components/PatientDashboard.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -59,12 +60,9 @@ const PatientDashboard = () => {
         navigate("/login");
         return;
       }
-      const res = await axios.get(
-        "http://localhost:5000/api/patient/progress",
-        {
-          headers: { "x-auth-token": token },
-        }
-      );
+      const res = await axios.get("http://localhost:5000/api/patient/progress", {
+        headers: { "x-auth-token": token },
+      });
       setProgressData(res.data);
     } catch (error) {
       setError("Failed to load progress.");
@@ -93,6 +91,8 @@ const PatientDashboard = () => {
           <a href="/dashboard">Home</a>
           <a href="/games">Games</a>
           <a href="/profile">Profile</a>
+          {/* New Tasks menu item */}
+          <a href="/tasks">Tasks</a>
           <a href="/logout">Logout</a>
         </div>
       </nav>

@@ -11,7 +11,9 @@ router.post("/start", authMiddleware, async (req, res) => {
     const { gameId, gameName, startLevel } = req.body;
 
     if (!gameId || !gameName) {
-      return res.status(400).json({ msg: "Game ID and Game Name are required." });
+      return res
+        .status(400)
+        .json({ msg: "Game ID and Game Name are required." });
     }
 
     // ✅ Create a new session entry
@@ -30,9 +32,9 @@ router.post("/start", authMiddleware, async (req, res) => {
 
     await newSession.save();
 
-    res.status(201).json({ 
-      msg: "New game session started!", 
-      sessionId: newSession.sessionId 
+    res.status(201).json({
+      msg: "New game session started!",
+      sessionId: newSession.sessionId,
     });
   } catch (error) {
     console.error("Error starting game session:", error);
@@ -43,10 +45,22 @@ router.post("/start", authMiddleware, async (req, res) => {
 // ✅ Save game progress (with levels & time)
 router.post("/progress", authMiddleware, async (req, res) => {
   try {
-    const { sessionId, score, completed, mistakes, endLevel, totalTime } = req.body;
+    const { sessionId, score, completed, mistakes, endLevel, totalTime } =
+      req.body;
 
-    if (!sessionId || score === undefined || completed === undefined || mistakes === undefined || !endLevel || !totalTime) {
-      return res.status(400).json({ msg: "All fields (sessionId, score, mistakes, completed, endLevel, totalTime) are required." });
+    if (
+      !sessionId ||
+      score === undefined ||
+      completed === undefined ||
+      mistakes === undefined ||
+      !endLevel ||
+      !totalTime
+    ) {
+      return res
+        .status(400)
+        .json({
+          msg: "All fields (sessionId, score, mistakes, completed, endLevel, totalTime) are required.",
+        });
     }
 
     // ✅ Find the existing session
@@ -58,7 +72,7 @@ router.post("/progress", authMiddleware, async (req, res) => {
 
     // ✅ Update progress
     progress.score = score;
-    progress.mistakes = mistakes; 
+    progress.mistakes = mistakes;
     progress.completed = completed;
     progress.endLevel = endLevel; // ✅ Store final level reached
     progress.totalTime = totalTime; // ✅ Store total time spent

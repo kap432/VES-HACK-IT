@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import jwtDecode from "jwt-decode"; // Optional: if you decide to use jwt-decode
 import "./FamilyTreeGame.css";
 
-// Define family trees for different difficulty levels
-const easyTree = [
+// Templates for different difficulty levels
+const easyTreeTemplate = [
   { id: 1, name: "👴 Grandfather", relation: "Grandfather", position: "top", placed: true },
   { id: 2, name: "👵 Grandmother", relation: "Grandmother", position: "top", placed: true },
   { id: 3, name: "👨 Father", relation: "Father", position: "middle", placed: false },
@@ -13,7 +14,7 @@ const easyTree = [
   { id: 5, name: "🧒 You", relation: "Child", position: "bottom", placed: false },
 ];
 
-const mediumTree = [
+const mediumTreeTemplate = [
   { id: 1, name: "👴 Great-Grandfather", relation: "Great-Grandfather", position: "top", placed: true },
   { id: 2, name: "👵 Great-Grandmother", relation: "Great-Grandmother", position: "top", placed: true },
   { id: 3, name: "🧓 Grandfather", relation: "Grandfather", position: "upper-middle", placed: false },
@@ -24,7 +25,7 @@ const mediumTree = [
   { id: 8, name: "👧 Sibling", relation: "Sibling", position: "bottom", placed: false },
 ];
 
-const hardTree = [
+const hardTreeTemplate = [
   { id: 1, name: "👴 Great-Grandfather 1", relation: "Great-Grandfather", position: "top", placed: true },
   { id: 2, name: "👵 Great-Grandmother 2", relation: "Great-Grandmother", position: "top", placed: true },
   { id: 3, name: "🧓 Grandfather 1", relation: "Grandfather", position: "upper-middle", placed: false },
@@ -41,10 +42,48 @@ const hardTree = [
 
 const MAX_LEVEL = 3;
 
+// Helper: Normalize a relation string and remove spaces and hyphens
+const normalizeRelation = (relation) => {
+  return relation.toLowerCase().trim().replace(/\s+/g, "").replace(/[-]/g, "");
+};
+
+// Helper: Update a tree template by merging matching family records.
+// For each node, we merge the first matching record and store all matching records in a "records" property.
+const updateTreeWithFamilyData = (treeTemplate, familyData) => {
+  return treeTemplate.map((node) => {
+    const normalizedNodeRelation = normalizeRelation(node.relation);
+    const matchedMembers = familyData.filter((member) =>
+      member.relation && normalizeRelation(member.relation) === normalizedNodeRelation
+    );
+    if (matchedMembers.length > 0) {
+      return { ...node, ...matchedMembers[0], records: matchedMembers };
+    }
+    return node;
+  });
+};
+
+// Helper: Get the appropriate tree for the current level
+const getTreeForLevel = (level, familyData) => {
+  let treeTemplate;
+  if (level === 1) treeTemplate = easyTreeTemplate;
+  else if (level === 2) treeTemplate = mediumTreeTemplate;
+  else treeTemplate = hardTreeTemplate;
+
+  return familyData ? updateTreeWithFamilyData(treeTemplate, familyData) : treeTemplate;
+};
+
+// Helper: Select a random unplaced card
+const getRandomCurrentCard = (treeArray) => {
+  const unplacedCards = treeArray.filter((c) => !c.placed);
+  return unplacedCards.length > 0
+    ? unplacedCards[Math.floor(Math.random() * unplacedCards.length)]
+    : null;
+};
+
 const FamilyTreeGame = () => {
   const navigate = useNavigate();
 
-  // Game state variables
+  // State variables
   const [currentLevel, setCurrentLevel] = useState(1);
   const [accumulatedTime, setAccumulatedTime] = useState(0);
   const [accumulatedMistakes, setAccumulatedMistakes] = useState(0);
@@ -57,30 +96,58 @@ const FamilyTreeGame = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [sessionId, setSessionId] = useState(null);
+  const [familyData, setFamilyData] = useState(null);
 
   // Sound Effects
   const correctSound = new Audio("/success-point.mp3");
   const winSound = new Audio("/family-tree-win.mp3");
   const wrongSound = new Audio("/family-tree-wrong.mp3");
 
-  // Function to get family tree based on current level
-  const getTreeForLevel = (level) => {
-    if (level === 1) return easyTree;
-    else if (level === 2) return mediumTree;
-    else return hardTree;
+  // Helper for error logging
+  const logError = (message, error) => {
+    console.error(new Date().toISOString(), message, error);
   };
 
-  // Function to select a random unplaced card from the tree
-  const getRandomCurrentCard = (treeArray) => {
-    const unplacedCards = treeArray.filter((c) => !c.placed);
-    return unplacedCards.length > 0
-      ? unplacedCards[Math.floor(Math.random() * unplacedCards.length)]
-      : null;
+  // Fetch family data using JWT decoding to extract patient id if available
+  const fetchFamilyData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.warn("No token found in localStorage.");
+        return;
+      }
+      // Decode the token
+      const decodeToken = (token) => {
+        try {
+          return JSON.parse(atob(token.split(".")[1]));
+        } catch (e) {
+          return null;
+        }
+      };
+      const decoded = decodeToken(token);
+      console.log("Decoded token:", decoded);
+      // Use the token's id field (not sub)
+      const patientIdFromToken = decoded ? decoded.id : null;
+      // Use patientId from token or fallback
+      const patientId = patientIdFromToken || localStorage.getItem("patientId") || "67adc06b470800e14d60b80";
+      console.log(`[${new Date().toISOString()}] Fetching family data for patientId: ${patientId}`);
+      console.log(`[${new Date().toISOString()}] Using token: ${token.substring(0, 10)}...`);
+
+      const response = await axios.get(`http://localhost:5000/api/family/${patientId}`, {
+        headers: { "x-auth-token": token },
+      });
+      console.log(`[${new Date().toISOString()}] Family data fetched successfully:`, response.data);
+      const data = Array.isArray(response.data) ? response.data : [response.data];
+      setFamilyData(data);
+      localStorage.setItem("familyData", JSON.stringify(data));
+    } catch (error) {
+      logError("Error fetching family data:", error.response?.data || error.message);
+    }
   };
 
-  // Reset game state without affecting accumulatedTime or accumulatedMistakes
+  // Reset game state
   const resetGame = (level) => {
-    const newTree = getTreeForLevel(level);
+    const newTree = getTreeForLevel(level, familyData);
     setTree(newTree);
     setCurrentCard(getRandomCurrentCard(newTree));
     setScore(0);
@@ -91,16 +158,20 @@ const FamilyTreeGame = () => {
     setMistakes(0);
   };
 
-  // On initial load or when currentLevel changes, check for an existing session; don't auto-create a new one.
+  // Fetch data on initial load and when familyData or currentLevel changes
   useEffect(() => {
-    const savedSessionId = localStorage.getItem("familyTreeSessionId");
-    if (savedSessionId) {
-      setSessionId(savedSessionId);
+    if (!familyData) {
+      fetchFamilyData();
     }
-    resetGame(currentLevel);
-  }, [currentLevel]);
+  }, []); // Run once on mount
 
-  // Timer effect: starts only when game is started.
+  useEffect(() => {
+    if (familyData) {
+      resetGame(currentLevel);
+    }
+  }, [familyData, currentLevel]);
+
+  // Timer effect
   useEffect(() => {
     if (!gameStarted || gameCompleted) return;
     const timer = setInterval(() => {
@@ -111,18 +182,15 @@ const FamilyTreeGame = () => {
       clearInterval(timer);
       winSound.play();
       setGameCompleted(true);
-      // Accumulate time and mistakes for the finished level
       setAccumulatedTime((prev) => prev + timeElapsed);
       setAccumulatedMistakes((prev) => prev + mistakes);
-      // After a short delay, update progress to backend for the finished level
       setTimeout(() => {
         updateProgress();
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [tree, winSound, gameStarted, timeElapsed, gameCompleted, mistakes]);
+  }, [tree, gameStarted, timeElapsed, gameCompleted, mistakes]);
 
-  // Function to start a new session (only when Start Game or Restart is clicked)
   const startSession = async () => {
     try {
       const response = await axios.post(
@@ -134,13 +202,10 @@ const FamilyTreeGame = () => {
       localStorage.setItem("familyTreeSessionId", response.data.sessionId);
       console.log("New session started:", response.data.sessionId);
     } catch (error) {
-      console.error("Error starting session:", error.response?.data || error.message);
+      logError("Error starting session:", error);
     }
   };
 
-  // Function to update progress to backend when game is complete.
-  // Total time is calculated as accumulatedTime + timeElapsed for the final level.
-  // Total mistakes is the sum of accumulatedMistakes and the current level mistakes.
   const updateProgress = async () => {
     try {
       const totalTime = accumulatedTime + timeElapsed;
@@ -162,11 +227,10 @@ const FamilyTreeGame = () => {
       );
       console.log("Progress saved successfully:", response.data);
     } catch (error) {
-      console.error("Error saving progress:", error.response?.data || error.message);
+      logError("Error saving progress:", error);
     }
   };
 
-  // Handler for starting the game: if no session exists, create one, then start.
   const handleStartGame = () => {
     if (!sessionId) {
       startSession();
@@ -174,7 +238,6 @@ const FamilyTreeGame = () => {
     setGameStarted(true);
   };
 
-  // Handler for restarting the game: clear everything, reset to level 1, clear accumulated values, and require the player to click Start.
   const handleRestartGame = () => {
     localStorage.removeItem("familyTreeSessionId");
     setSessionId(null);
@@ -182,16 +245,14 @@ const FamilyTreeGame = () => {
     setAccumulatedTime(0);
     setAccumulatedMistakes(0);
     resetGame(1);
-    // Do not automatically start; let the player click Start Game.
   };
 
-  // Handler for exiting the game: clear the session, reset state, and navigate back.
   const handleExitGame = () => {
     localStorage.removeItem("familyTreeSessionId");
     setSessionId(null);
     resetGame(currentLevel);
     setGameStarted(false);
-    navigate("/dashboard"); // Adjust route as needed.
+    navigate("/dashboard");
   };
 
   const handleDragStart = (e, cardId) => {
@@ -203,17 +264,20 @@ const FamilyTreeGame = () => {
     const draggedCardId = parseInt(e.dataTransfer.getData("cardId"));
     const draggedCard = tree.find((c) => c.id === draggedCardId);
 
-    if (draggedCard && draggedCard.position === position && draggedCard.id === currentCard.id) {
+    if (
+      draggedCard &&
+      draggedCard.position === position &&
+      currentCard &&
+      draggedCard.id === currentCard.id
+    ) {
       setHistory((prevHistory) => [
         ...prevHistory,
         { tree: [...tree], currentCard, score },
       ]);
-
       setTree((prevTree) => {
         const updatedTree = prevTree.map((card) =>
           card.id === draggedCard.id ? { ...card, placed: true } : card
         );
-        const unplacedCards = updatedTree.filter((c) => !c.placed);
         setCurrentCard(getRandomCurrentCard(updatedTree));
         setScore((prevScore) => prevScore + 10);
         correctSound.play();
@@ -225,7 +289,6 @@ const FamilyTreeGame = () => {
     }
   };
 
-  // Handler for undoing the last move
   const handleUndo = () => {
     if (tree.every((slot) => slot.placed)) return;
     if (history.length === 0) return;
@@ -236,12 +299,10 @@ const FamilyTreeGame = () => {
     setHistory((prevHistory) => prevHistory.slice(0, prevHistory.length - 1));
   };
 
-  // Handler for proceeding to the next level manually (session continues across levels)
   const handleNextLevel = () => {
     if (currentLevel < MAX_LEVEL) {
       setCurrentLevel((prevLevel) => prevLevel + 1);
       resetGame(currentLevel + 1);
-      // The accumulatedTime and accumulatedMistakes are kept across levels.
     } else {
       alert("You've reached the highest level!");
     }
@@ -249,7 +310,6 @@ const FamilyTreeGame = () => {
 
   const levelsOrder = ["top", "upper-middle", "middle", "bottom"];
 
-  // Animation variants for enhanced visual effects
   const headerVariants = {
     hidden: { opacity: 0, y: -20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -268,7 +328,6 @@ const FamilyTreeGame = () => {
 
   return (
     <div className="game-container">
-      {/* Header */}
       <motion.div id="header" variants={headerVariants} initial="hidden" animate="visible">
         <span>🌳 Family Tree Game - Level {currentLevel}</span>
         <span className="score">Score: {score}</span>
@@ -300,14 +359,12 @@ const FamilyTreeGame = () => {
         </button>
       </motion.div>
 
-      {/* Start Button */}
       {!gameStarted && !tree.every((slot) => slot.placed) && (
         <button className="start-btn" onClick={handleStartGame}>
           Start Game
         </button>
       )}
 
-      {/* Family Tree */}
       <div className="family-tree">
         {levelsOrder.map((level, index) => (
           <React.Fragment key={level}>
@@ -326,7 +383,11 @@ const FamilyTreeGame = () => {
                   >
                     {slot.placed && (
                       <motion.div className="card placed" variants={nodeVariants} animate="placed" transition={{ duration: 0.3 }}>
-                        <strong>{slot.name}</strong>
+                        <strong>
+                          {slot.records
+                            ? slot.records.map((r) => r.name).join(", ")
+                            : slot.name}
+                        </strong>
                         <p className="relation">{slot.relation}</p>
                       </motion.div>
                     )}
@@ -338,7 +399,6 @@ const FamilyTreeGame = () => {
         ))}
       </div>
 
-      {/* Draggable Card */}
       <AnimatePresence>
         {gameStarted && currentCard && !currentCard.placed && (
           <motion.div
@@ -357,7 +417,6 @@ const FamilyTreeGame = () => {
         )}
       </AnimatePresence>
 
-      {/* Win Message */}
       <AnimatePresence>
         {tree.every((slot) => slot.placed) && (
           <motion.div

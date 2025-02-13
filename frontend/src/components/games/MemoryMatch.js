@@ -37,12 +37,20 @@ const MemoryMatch = () => {
       const response = await axios.post(
         "http://localhost:5000/api/games/start",
         { gameId: "memory_match", gameName: "Memory Match", startLevel },
-        { headers: { "x-auth-token": token, "Content-Type": "application/json" } }
+        {
+          headers: {
+            "x-auth-token": token,
+            "Content-Type": "application/json",
+          },
+        },
       );
       setSessionId(response.data.sessionId);
       console.log("New session started:", response.data.sessionId);
     } catch (error) {
-      console.error("Error starting session:", error.response?.data || error.message);
+      console.error(
+        "Error starting session:",
+        error.response?.data || error.message,
+      );
     }
   }, [token, startLevel]);
 
@@ -96,11 +104,19 @@ const MemoryMatch = () => {
       const response = await axios.post(
         "http://localhost:5000/api/games/progress",
         payload,
-        { headers: { "x-auth-token": token, "Content-Type": "application/json" } }
+        {
+          headers: {
+            "x-auth-token": token,
+            "Content-Type": "application/json",
+          },
+        },
       );
       console.log("Progress saved successfully:", response.data);
     } catch (error) {
-      console.error("Error saving progress:", error.response?.data || error.message);
+      console.error(
+        "Error saving progress:",
+        error.response?.data || error.message,
+      );
     }
   }, [matchedCards, sessionId, token, mistakes, endLevel, timeElapsed]);
 
@@ -112,7 +128,7 @@ const MemoryMatch = () => {
       sendProgressToBackend();
     }
   }, [matchedCards, sendProgressToBackend, gameOver]);
-  
+
   const handleCardClick = (card) => {
     if (
       flippedCards.length < 2 &&
@@ -159,7 +175,9 @@ const MemoryMatch = () => {
               className={`card ${flippedCards.includes(card) || matchedCards.includes(card.name) ? "flipped" : ""}`}
               onClick={() => handleCardClick(card)}
             >
-              {flippedCards.includes(card) || matchedCards.includes(card.name) ? card.name : "❓"}
+              {flippedCards.includes(card) || matchedCards.includes(card.name)
+                ? card.name
+                : "❓"}
             </div>
           ))}
         </div>

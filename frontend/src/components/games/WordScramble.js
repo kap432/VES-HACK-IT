@@ -29,7 +29,7 @@ const WordScramble = () => {
         await axios.post(
           "http://localhost:5000/api/patient/progress",
           { gameId: "word_scramble", score: score + 1 },
-          { headers: { "x-auth-token": token } }
+          { headers: { "x-auth-token": token } },
         );
       } catch (error) {
         console.error("Failed to save progress", error);

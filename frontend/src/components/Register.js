@@ -27,32 +27,31 @@ const Register = () => {
     }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const requestBody = { ...user };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const requestBody = { ...user };
 
-    // Remove guardianEmail for guardians & doctors
-    if (user.role !== "player") {
-      delete requestBody.guardianEmail;
-      delete requestBody.selfMonitor;
-    } else if (user.selfMonitor) {
-      requestBody.guardianEmail = ""; // No guardian required if self-monitoring
+      // Remove guardianEmail for guardians & doctors
+      if (user.role !== "player") {
+        delete requestBody.guardianEmail;
+        delete requestBody.selfMonitor;
+      } else if (user.selfMonitor) {
+        requestBody.guardianEmail = ""; // No guardian required if self-monitoring
+      }
+
+      await axios.post("http://localhost:5000/api/auth/register", requestBody, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      console.log("Request Body:", requestBody);
+
+      alert("Registration successful!");
+      navigate("/login");
+    } catch (error) {
+      setErrorMessage(error.response?.data?.msg || "Registration failed");
     }
-
-    await axios.post("http://localhost:5000/api/auth/register", requestBody, {
-      headers: { "Content-Type": "application/json" },
-    });
-
-    console.log("Request Body:", requestBody);
-
-    alert("Registration successful!");
-    navigate("/login");
-  } catch (error) {
-    setErrorMessage(error.response?.data?.msg || "Registration failed");
-  }
-};
-
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">

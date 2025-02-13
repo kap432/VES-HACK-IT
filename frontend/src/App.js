@@ -10,7 +10,8 @@ import MathQuiz from "./components/games/MathQuiz";
 import WordScramble from "./components/games/WordScramble";
 import FamilyTreeGame from "./components/games/FamilyTreeGame";
 import PatientGames from "./components/PatientGames";
-import GuardianDashboard from "./components/GuardianDashboard";  // New import
+import GuardianDashboard from "./components/GuardianDashboard"; // New import
+import Task from "./pages/Task";
 
 function App() {
   return (
@@ -27,6 +28,8 @@ function App() {
         <Route path="/guardian-dashboard" element={<GuardianDashboard />} />
         <Route path="/games/family-tree" element={<FamilyTreeGame />} />
         <Route path="/patient-games/:patientId" element={<PatientGames />} />
+        <Route path="/tasks" element={<Task />} />
+        
       </Routes>
     </Router>
   );
