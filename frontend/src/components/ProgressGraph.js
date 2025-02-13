@@ -22,7 +22,7 @@ const ProgressGraph = ({ progressData = [] }) => {
   // Define chart data
   const data = {
     labels: progressData.map((p) =>
-      p.date ? new Date(p.date).toLocaleDateString() : "Unknown Date"
+      p.date ? new Date(p.date).toLocaleDateString() : "Unknown Date",
     ),
     datasets: [
       {

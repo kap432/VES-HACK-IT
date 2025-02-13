@@ -16,9 +16,11 @@ passport.use(
 
         if (!user) {
           // If user does not exist, restrict Google signup
-          return done(null, false, { message: "You must register first before using Google login." });
-        } 
-        
+          return done(null, false, {
+            message: "You must register first before using Google login.",
+          });
+        }
+
         if (!user.googleId) {
           // If user exists but has no Google ID, update the record
           user.googleId = profile.id;
@@ -29,8 +31,8 @@ passport.use(
       } catch (error) {
         return done(error, null);
       }
-    }
-  )
+    },
+  ),
 );
 
 // Serialize and Deserialize User

@@ -1,0 +1,97 @@
+/* PatientGames.css */
+
+/* Main container */
+.patient-games {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    font-family: 'Arial', sans-serif;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Main heading */
+  .patient-games h2 {
+    text-align: center;
+    color: #343a40;
+    margin-bottom: 20px;
+  }
+  
+  /* Error message styling */
+  .error-message {
+    color: #dc3545;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  
+  /* Container for the list of games */
+  .games-list {
+    margin-bottom: 30px;
+  }
+  
+  /* Styling each game card */
+  .game-card {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Paragraphs inside a game card */
+  .game-card p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #495057;
+  }
+  
+  /* Horizontal rule inside a game card */
+  .game-card hr {
+    margin: 10px 0;
+    border: 0;
+    border-top: 1px solid #dee2e6;
+  }
+  
+  /* Task assignment form container */
+  .task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  /* Styling for input fields in the task form */
+  .task-form input[type="text"],
+  .task-form input[type="time"],
+  .task-form input[type="date"] {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  /* Styling for the task form button */
+  .task-form button {
+    padding: 10px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Button hover effect */
+  .task-form button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Optional: Headings inside games list */
+  .games-list h4 {
+    color: #343a40;
+    margin-bottom: 10px;
+  }
+  

@@ -21,7 +21,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "thisshouldbeabettersecret!",
     resave: false,
     saveUninitialized: false,
-  })
+  }),
 );
 
 // Initialize Passport.js
@@ -44,6 +44,8 @@ const gameRoutes = require("./routes/games");
 const doctorRoutes = require("./routes/doctor");
 const patientRoutes = require("./routes/patient"); // Added patient routes
 const guardianRoutes = require("./routes/guardian");
+const tasksRoutes = require("./routes/tasks");
+const familyRoutes = require("./routes/family");
 // ...
 
 // Use Routes
@@ -53,6 +55,8 @@ app.use("/api/games", gameRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/patient", patientRoutes); // New route for patients
 app.use("/api/guardian", guardianRoutes);
+app.use("/api/tasks", tasksRoutes);
+app.use("/api/family", familyRoutes);
 
 // Default Route
 app.get("/", (req, res) => {

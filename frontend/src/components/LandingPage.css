@@ -8,14 +8,13 @@
   /* background-color: aqua; */
 }
 
-#landing-header{
+#landing-header {
   width: 100vw;
   /* background-color: rgb(127, 176, 255) */
   display: flex;
   justify-content: flex-end;
   align-self: center;
   /* padding: 2px; */
-
 }
 
 #landing-image {
@@ -37,7 +36,6 @@
   z-index: 111;
   margin: 10px;
 }
-
 
 #name-vayudrishti {
   width: 100%;
@@ -62,7 +60,6 @@
   color: #500071;
   font-size: 2vw;
   padding-left: 30px;
-
 }
 
 #get-started {
@@ -76,7 +73,7 @@
   /* background-color: chartreuse; */
 }
 
-#nextscroll_1{
+#nextscroll_1 {
   width: 100%;
   height: 100vh;
   display: flex;
@@ -87,25 +84,26 @@
   border-bottom: 3px solid black;
 }
 
-#whychoseus{
+#whychoseus {
   width: 80%;
   height: 80%;
   display: flex;
   /* justify-content: center; */
   align-items: center;
-  background: linear-gradient(-135deg, #c851fb 0%, #993EBD 48%, #6d1e8c 100%);
-box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5), 
-            inset 10px 10px 30px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(-135deg, #c851fb 0%, #993ebd 48%, #6d1e8c 100%);
+  box-shadow:
+    10px 10px 30px rgba(0, 0, 0, 0.5),
+    inset 10px 10px 30px rgba(0, 0, 0, 0.3);
   border-radius: 20px;
   flex-direction: column;
   padding: 15px;
 }
 
-#why{
+#why {
   width: 80%;
   height: 15%;
   display: flex;
-  justify-content:flex-start;
+  justify-content: flex-start;
   padding-top: 25px;
   align-items: center;
   /* background-color: aquamarine; */
@@ -113,8 +111,7 @@ box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5),
   font-weight: 700;
 }
 
-
-.reason-rows{
+.reason-rows {
   width: 100%;
   height: 75%;
   display: flex;
@@ -122,11 +119,11 @@ box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5),
   /* background-color: bisque; */
   /* border: 1px solid #000000; */
   font-size: 1.4vw;
-  font-weight:500;
+  font-weight: 500;
   text-align: center;
 }
 
-#reason-1{
+#reason-1 {
   width: 50%;
   height: 100%;
   /* background-color: blue; */
@@ -136,7 +133,7 @@ box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5),
   justify-content: center;
   align-items: center;
 }
-#reason-2{
+#reason-2 {
   width: 50%;
   height: 100%;
   /* background-color: rgb(56, 186, 186); */
@@ -147,7 +144,7 @@ box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5),
   align-items: center;
 }
 
-#reason-3{
+#reason-3 {
   width: 50%;
   height: 100%;
   /* background-color: rgb(119, 119, 224); */
@@ -157,7 +154,7 @@ box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5),
   justify-content: center;
   align-items: center;
 }
-#reason-4{
+#reason-4 {
   width: 50%;
   height: 100%;
   /* background-color: rgb(104, 186, 56); */
@@ -167,7 +164,6 @@ box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5),
   justify-content: center;
   align-items: center;
 }
-
 
 .symbol {
   display: flex;
@@ -179,7 +175,7 @@ box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5),
   align-items: center;
 }
 
-#nextscroll_2{
+#nextscroll_2 {
   width: 100%;
   height: 190vh;
   display: flex;
@@ -191,66 +187,58 @@ box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5),
   border-bottom: 3px solid black;
 }
 
-#how_works{
-  width:70%;
-  height:fit-content;
+#how_works {
+  width: 70%;
+  height: fit-content;
   display: flex;
   align-items: flex-start;
   /* background-color: rgb(190, 229, 229); */
   font-size: 4vw;
- 
-
 }
 
-#signup_work{
-  width:68%;
+#signup_work {
+  width: 68%;
   height: 18%;
-  background: linear-gradient(to left, #FFFFFF 0%, #FFFFFF 48%, #ADD8E6 100%);
+  background: linear-gradient(to left, #ffffff 0%, #ffffff 48%, #add8e6 100%);
   display: flex;
-  justify-content:space-evenly;
+  justify-content: space-evenly;
   align-items: center;
   border-radius: 15px;
   padding-left: 15px;
 }
 
-#choose_game{
-  width:68%;
+#choose_game {
+  width: 68%;
   height: 18%;
-  background: linear-gradient(to right, #FFFFFF 0%, #FFFFFF 59%, #90EE90 100%);
+  background: linear-gradient(to right, #ffffff 0%, #ffffff 59%, #90ee90 100%);
   display: flex;
-  justify-content:space-evenly;
+  justify-content: space-evenly;
   align-items: center;
   border-radius: 15px;
   padding-right: 15px;
-
-
 }
 
-#play_n_enjoy{
-  width:68%;
+#play_n_enjoy {
+  width: 68%;
   height: 18%;
-  background: linear-gradient(to left, #FFFFFF 0%, #FFFFFF 59%, #FFA07A 100%);
+  background: linear-gradient(to left, #ffffff 0%, #ffffff 59%, #ffa07a 100%);
   display: flex;
-  justify-content:space-evenly;
+  justify-content: space-evenly;
   align-items: center;
   border-radius: 15px;
   padding-left: 15px;
-
-
 }
 
-#track_progress{
-  width:68%;
+#track_progress {
+  width: 68%;
   height: 18%;
-  background: linear-gradient(to right, #FFFFFF 0%, #FFFFFF 59%, #9F9FFA 100%);
+  background: linear-gradient(to right, #ffffff 0%, #ffffff 59%, #9f9ffa 100%);
   display: flex;
-  justify-content:space-evenly;
+  justify-content: space-evenly;
   align-items: center;
   border-radius: 15px;
   padding-right: 15px;
-
 }
-
 
 .circle {
   width: 9.5vw;
@@ -272,23 +260,33 @@ box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.5),
   border-radius: 50%;
   padding: 6px;
   background: var(--border-gradient);
-  
+
   /* Ensure proper masking */
-  -webkit-mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0);
-  mask: linear-gradient(white 0 0) content-box, linear-gradient(white 0 0);
+  -webkit-mask:
+    linear-gradient(white 0 0) content-box,
+    linear-gradient(white 0 0);
+  mask:
+    linear-gradient(white 0 0) content-box,
+    linear-gradient(white 0 0);
   -webkit-mask-composite: exclude;
   mask-composite: exclude;
 }
 
 /* Different Gradients for Each Circle */
-#circle_1 { --border-gradient: linear-gradient(135deg, #21a5d1, #52badc, #79c8e2); }
-#circle_2 { --border-gradient: linear-gradient(135deg, #34AB34, #52F052); }
-#circle_3 { --border-gradient: linear-gradient(135deg,#C76843, #FFA07A); }
-#circle_4 { --border-gradient: linear-gradient(135deg, #3D5AFE, #304FFE, #1A237E); }
+#circle_1 {
+  --border-gradient: linear-gradient(135deg, #21a5d1, #52badc, #79c8e2);
+}
+#circle_2 {
+  --border-gradient: linear-gradient(135deg, #34ab34, #52f052);
+}
+#circle_3 {
+  --border-gradient: linear-gradient(135deg, #c76843, #ffa07a);
+}
+#circle_4 {
+  --border-gradient: linear-gradient(135deg, #3d5afe, #304ffe, #1a237e);
+}
 
-
-
-.how_content{
+.how_content {
   font-size: 2.5vw;
   /* background-color: #00C9A7; */
 }

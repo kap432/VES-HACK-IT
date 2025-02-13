@@ -17,18 +17,31 @@ router.post("/login", async (req, res) => {
     if (!user) return res.status(400).json({ msg: "User not found" });
 
     // 🔹 Check if user registered with Google
-    if (!user.password) return res.status(400).json({ msg: "Use Google login" });
+    if (!user.password)
+      return res.status(400).json({ msg: "Use Google login" });
 
     // 🔹 Validate password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
     // 🔹 Generate JWT token
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      },
+    );
 
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (err) {
     console.error("❌ Login error:", err.message);
     res.status(500).json({ msg: "Server error" });
@@ -87,7 +100,7 @@ router.post("/register", async (req, res) => {
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
 
     res.json({
@@ -107,11 +120,10 @@ router.post("/register", async (req, res) => {
   }
 });
 
-
 // ✅ Google Authentication (Login Only)
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", { scope: ["profile", "email"] }),
 );
 
 router.get(
@@ -126,16 +138,20 @@ router.get(
         return res.redirect("http://localhost:3000/login?error=unregistered");
       }
 
-      const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-        expiresIn: "1h",
-      });
+      const token = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1h",
+        },
+      );
 
       res.redirect(`http://localhost:3000/dashboard?token=${token}`);
     } catch (error) {
       console.error("Google authentication error:", error);
       res.status(500).json({ msg: "Server error" });
     }
-  }
+  },
 );
 
 // ✅ Logout User

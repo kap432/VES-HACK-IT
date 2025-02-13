@@ -15,6 +15,7 @@ const progressSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 });
 
-const Progress = mongoose.models.Progress || mongoose.model("Progress", progressSchema);
+const Progress =
+  mongoose.models.Progress || mongoose.model("Progress", progressSchema);
 
 module.exports = Progress;

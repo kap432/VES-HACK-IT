@@ -8,13 +8,16 @@ const router = express.Router();
 // Google Login Route
 router.get(
   "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", { scope: ["profile", "email"] }),
 );
 
 // Google Callback Route
 router.get(
   "/google/callback",
-  passport.authenticate("google", { session: false, failureRedirect: "http://localhost:3000/login" }),
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "http://localhost:3000/login",
+  }),
   async (req, res) => {
     try {
       const { email } = req.user;
@@ -36,7 +39,7 @@ router.get(
       console.error("Google authentication error:", error);
       res.status(500).json({ msg: "Server error" });
     }
-  }
+  },
 );
 
 module.exports = router;

@@ -34,12 +34,20 @@ const MathQuiz = () => {
       const response = await axios.post(
         "http://localhost:5000/api/games/start",
         { gameId: "math_quiz", gameName: "Math Quiz", startLevel },
-        { headers: { "x-auth-token": token, "Content-Type": "application/json" } }
+        {
+          headers: {
+            "x-auth-token": token,
+            "Content-Type": "application/json",
+          },
+        },
       );
       setSessionId(response.data.sessionId);
       console.log("New session started:", response.data.sessionId);
     } catch (error) {
-      console.error("Error starting session:", error.response?.data || error.message);
+      console.error(
+        "Error starting session:",
+        error.response?.data || error.message,
+      );
     }
   }, [token, startLevel]);
 
@@ -67,7 +75,9 @@ const MathQuiz = () => {
   const checkAnswer = () => {
     if (!question) return;
 
-    const correctAnswer = eval(`${question.num1} ${question.operation} ${question.num2}`);
+    const correctAnswer = eval(
+      `${question.num1} ${question.operation} ${question.num2}`,
+    );
     let updatedScore = score;
 
     if (parseInt(answer, 10) === correctAnswer) {
@@ -102,14 +112,15 @@ const MathQuiz = () => {
     console.log("Sending progress data:", payload);
 
     try {
-      await axios.post(
-        "http://localhost:5000/api/games/progress",
-        payload,
-        { headers: { "x-auth-token": token, "Content-Type": "application/json" } }
-      );
+      await axios.post("http://localhost:5000/api/games/progress", payload, {
+        headers: { "x-auth-token": token, "Content-Type": "application/json" },
+      });
       console.log("Progress saved successfully.");
     } catch (error) {
-      console.error("Error saving progress:", error.response?.data || error.message);
+      console.error(
+        "Error saving progress:",
+        error.response?.data || error.message,
+      );
     }
 
     if (redirect) {
@@ -142,14 +153,18 @@ const MathQuiz = () => {
           <h3 className="game-over">🎉 You won! Play again?</h3>
           <p>⏳ Total Time: {timeElapsed}s</p>
           <p>❌ Total Mistakes: {mistakes}</p>
-          <button className="restart-btn" onClick={() => window.location.reload()}>
+          <button
+            className="restart-btn"
+            onClick={() => window.location.reload()}
+          >
             Restart Game 🔄
           </button>
         </>
       ) : (
         <>
           <p className="question">
-            {question && `${question.num1} ${question.operation} ${question.num2} = ?`}
+            {question &&
+              `${question.num1} ${question.operation} ${question.num2} = ?`}
           </p>
           <input
             type="number"
