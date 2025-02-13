@@ -1,0 +1,65 @@
+/* Login.css */
+
+/* Container styling for the login form */
+.login-container {
+  max-width: 400px;
+  margin: auto;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Form header */
+h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #1d4ed8; /* Blue */
+}
+
+/* Input fields */
+input {
+  width: 100%;
+  padding: 1rem;
+  margin: 0.8rem 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+input:focus {
+  border-color: #1d4ed8; /* Blue focus effect */
+  outline: none;
+}
+
+/* Submit button */
+button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.2rem;
+  background-color: #1d4ed8; /* Blue */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: #2563eb; /* Darker blue */
+}
+
+/* Google login button styling */
+button[style*="background-color: red"] {
+  background-color: #db4437;
+  color: white;
+}
+
+button[style*="background-color: red"]:hover {
+  background-color: #c1351d;
+}
+
+hr {
+  margin: 1.5rem 0;
+}
