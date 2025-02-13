@@ -9,7 +9,7 @@ import MemoryMatch from "./components/games/MemoryMatch";
 import MathQuiz from "./components/games/MathQuiz";
 import WordScramble from "./components/games/WordScramble";
 import FamilyTreeGame from "./components/games/FamilyTreeGame";
-
+import PatientGames from "./components/PatientGames";
 import GuardianDashboard from "./components/GuardianDashboard";  // New import
 
 function App() {
@@ -26,6 +26,7 @@ function App() {
         <Route path="/games/3" element={<WordScramble />} />
         <Route path="/guardian-dashboard" element={<GuardianDashboard />} />
         <Route path="/games/family-tree" element={<FamilyTreeGame />} />
+        <Route path="/patient-games/:patientId" element={<PatientGames />} />
       </Routes>
     </Router>
   );
