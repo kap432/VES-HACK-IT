@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import jwtDecode from "jwt-decode"; // Optional: if you decide to use jwt-decode
 import "./FamilyTreeGame.css";
 
 // Templates for different difficulty levels
@@ -42,13 +41,11 @@ const hardTreeTemplate = [
 
 const MAX_LEVEL = 3;
 
-// Helper: Normalize a relation string and remove spaces and hyphens
+// Helper: remove spaces and hyphens for matching
 const normalizeRelation = (relation) => {
   return relation.toLowerCase().trim().replace(/\s+/g, "").replace(/[-]/g, "");
 };
 
-// Helper: Update a tree template by merging matching family records.
-// For each node, we merge the first matching record and store all matching records in a "records" property.
 const updateTreeWithFamilyData = (treeTemplate, familyData) => {
   return treeTemplate.map((node) => {
     const normalizedNodeRelation = normalizeRelation(node.relation);
@@ -62,7 +59,6 @@ const updateTreeWithFamilyData = (treeTemplate, familyData) => {
   });
 };
 
-// Helper: Get the appropriate tree for the current level
 const getTreeForLevel = (level, familyData) => {
   let treeTemplate;
   if (level === 1) treeTemplate = easyTreeTemplate;
@@ -72,7 +68,6 @@ const getTreeForLevel = (level, familyData) => {
   return familyData ? updateTreeWithFamilyData(treeTemplate, familyData) : treeTemplate;
 };
 
-// Helper: Select a random unplaced card
 const getRandomCurrentCard = (treeArray) => {
   const unplacedCards = treeArray.filter((c) => !c.placed);
   return unplacedCards.length > 0
@@ -83,7 +78,6 @@ const getRandomCurrentCard = (treeArray) => {
 const FamilyTreeGame = () => {
   const navigate = useNavigate();
 
-  // State variables
   const [currentLevel, setCurrentLevel] = useState(1);
   const [accumulatedTime, setAccumulatedTime] = useState(0);
   const [accumulatedMistakes, setAccumulatedMistakes] = useState(0);
@@ -98,17 +92,14 @@ const FamilyTreeGame = () => {
   const [sessionId, setSessionId] = useState(null);
   const [familyData, setFamilyData] = useState(null);
 
-  // Sound Effects
   const correctSound = new Audio("/success-point.mp3");
   const winSound = new Audio("/family-tree-win.mp3");
   const wrongSound = new Audio("/family-tree-wrong.mp3");
 
-  // Helper for error logging
   const logError = (message, error) => {
     console.error(new Date().toISOString(), message, error);
   };
 
-  // Fetch family data using JWT decoding to extract patient id if available
   const fetchFamilyData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -116,7 +107,6 @@ const FamilyTreeGame = () => {
         console.warn("No token found in localStorage.");
         return;
       }
-      // Decode the token
       const decodeToken = (token) => {
         try {
           return JSON.parse(atob(token.split(".")[1]));
@@ -126,9 +116,8 @@ const FamilyTreeGame = () => {
       };
       const decoded = decodeToken(token);
       console.log("Decoded token:", decoded);
-      // Use the token's id field (not sub)
+
       const patientIdFromToken = decoded ? decoded.id : null;
-      // Use patientId from token or fallback
       const patientId = patientIdFromToken || localStorage.getItem("patientId") || "67adc06b470800e14d60b80";
       console.log(`[${new Date().toISOString()}] Fetching family data for patientId: ${patientId}`);
       console.log(`[${new Date().toISOString()}] Using token: ${token.substring(0, 10)}...`);
@@ -145,7 +134,6 @@ const FamilyTreeGame = () => {
     }
   };
 
-  // Reset game state
   const resetGame = (level) => {
     const newTree = getTreeForLevel(level, familyData);
     setTree(newTree);
@@ -158,12 +146,11 @@ const FamilyTreeGame = () => {
     setMistakes(0);
   };
 
-  // Fetch data on initial load and when familyData or currentLevel changes
   useEffect(() => {
     if (!familyData) {
       fetchFamilyData();
     }
-  }, []); // Run once on mount
+  }, []);
 
   useEffect(() => {
     if (familyData) {
@@ -171,7 +158,6 @@ const FamilyTreeGame = () => {
     }
   }, [familyData, currentLevel]);
 
-  // Timer effect
   useEffect(() => {
     if (!gameStarted || gameCompleted) return;
     const timer = setInterval(() => {
@@ -238,6 +224,7 @@ const FamilyTreeGame = () => {
     setGameStarted(true);
   };
 
+  // RESTART BUTTON FUNCTIONALITY
   const handleRestartGame = () => {
     localStorage.removeItem("familyTreeSessionId");
     setSessionId(null);
@@ -257,6 +244,11 @@ const FamilyTreeGame = () => {
 
   const handleDragStart = (e, cardId) => {
     e.dataTransfer.setData("cardId", cardId);
+    e.currentTarget.classList.add("dragging");
+  };
+
+  const handleDragEnd = (e) => {
+    e.currentTarget.classList.remove("dragging");
   };
 
   const handleDrop = (e, position) => {
@@ -310,6 +302,7 @@ const FamilyTreeGame = () => {
 
   const levelsOrder = ["top", "upper-middle", "middle", "bottom"];
 
+  // Animate variants
   const headerVariants = {
     hidden: { opacity: 0, y: -20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -328,83 +321,71 @@ const FamilyTreeGame = () => {
 
   return (
     <div className="game-container">
-      <motion.div id="header" variants={headerVariants} initial="hidden" animate="visible">
-        <span>🌳 Family Tree Game - Level {currentLevel}</span>
-        <span className="score">Score: {score}</span>
-        <span className="timer">Time: {timeElapsed} sec</span>
-        <span className="mistakes">Mistakes: {accumulatedMistakes + mistakes}</span>
-        <button
-          className="help-btn"
-          onClick={() =>
+      {/* Top Bar */}
+      <div className="top-bar">
+        <div className="top-left">
+          <button className="exit-btn" onClick={handleExitGame}>Exit</button>
+          <button className="undo-btn" onClick={handleUndo} disabled={history.length === 0 || tree.every((slot) => slot.placed)}>Undo</button>
+          {/* RESTART BUTTON ADDED */}
+          <button className="restart-btn" onClick={handleRestartGame}>Restart</button>
+        </div>
+        <div className="top-right">
+          <button className="help-btn" onClick={() =>
             alert(
-              "Drag the card to its correct position. Earn points, undo mistakes, and complete the family tree. When you win, click 'Next Level' to advance. Click 'Start Game' when you're ready. Use 'Restart' to begin a new session, or 'Exit' to quit."
+              "Drag the card to its correct position. Earn points, undo mistakes, and complete the family tree. When you win, click 'Next Level' to advance. Click 'Start Game' when you're ready. Use 'Restart' to begin a new session."
             )
-          }
-        >
-          Help
-        </button>
-        <button className="undo-btn" onClick={handleUndo} disabled={history.length === 0 || tree.every((slot) => slot.placed)}>
-          Undo
-        </button>
-        {gameCompleted && currentLevel < MAX_LEVEL && (
-          <button className="next-level-btn" onClick={handleNextLevel}>
-            Next Level
-          </button>
-        )}
-        <button className="restart-btn" onClick={handleRestartGame}>
-          Restart
-        </button>
-        <button className="exit-btn" onClick={handleExitGame}>
-          Exit
-        </button>
-      </motion.div>
+          }>Help</button>
+         <div className="timer">
+  <img src="/timer.png" alt="Timer Icon" className="timer-icon" />
+  <span>{timeElapsed < 10 ? `0${timeElapsed}` : timeElapsed} s</span>
+</div>
 
-      {!gameStarted && !tree.every((slot) => slot.placed) && (
-        <button className="start-btn" onClick={handleStartGame}>
-          Start Game
-        </button>
-      )}
+        </div>
+      </div>
+
+      {/* Main Tree Area */}
+      <motion.div id="header" variants={headerVariants} initial="hidden" animate="visible" className="header-center">
+        <span className="level-title">Family Tree Game - Level {currentLevel}</span>
+        <span className="score">Score: {score}</span>
+        <span className="mistakes">Mistakes: {accumulatedMistakes + mistakes}</span>
+      </motion.div>
 
       <div className="family-tree">
         {levelsOrder.map((level, index) => (
           <React.Fragment key={level}>
             <div className={`tree-level ${level}`}>
-              {tree
-                .filter((item) => item.position === level)
-                .map((slot) => (
-                  <motion.div
-                    key={slot.id}
-                    className="tree-node"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => handleDrop(e, slot.position)}
-                    variants={nodeVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    {slot.placed && (
-                      <motion.div className="card placed" variants={nodeVariants} animate="placed" transition={{ duration: 0.3 }}>
-                        <strong>
-                          {slot.records
-                            ? slot.records.map((r) => r.name).join(", ")
-                            : slot.name}
-                        </strong>
-                        <p className="relation">{slot.relation}</p>
-                      </motion.div>
-                    )}
-                  </motion.div>
-                ))}
+              {tree.filter((item) => item.position === level).map((slot) => (
+                <motion.div
+                  key={slot.id}
+                  className="tree-node"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => handleDrop(e, slot.position)}
+                  variants={nodeVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  {slot.placed && (
+                    <motion.div className="card placed" variants={nodeVariants} animate="placed" transition={{ duration: 0.3 }}>
+                      <strong>{slot.records ? slot.records.map((r) => r.name).join(", ") : slot.name}</strong>
+                      <p className="relation">{slot.relation}</p>
+                    </motion.div>
+                  )}
+                </motion.div>
+              ))}
             </div>
             {index < levelsOrder.length - 1 && <div className="connector" />}
           </React.Fragment>
         ))}
       </div>
 
+      {/* Draggable Card */}
       <AnimatePresence>
         {gameStarted && currentCard && !currentCard.placed && (
           <motion.div
             className="drag-card"
             draggable
             onDragStart={(e) => handleDragStart(e, currentCard.id)}
+            onDragEnd={handleDragEnd}
             variants={cardVariants}
             whileHover="hover"
             whileTap="tap"
@@ -417,15 +398,21 @@ const FamilyTreeGame = () => {
         )}
       </AnimatePresence>
 
+      {/* Bottom Bar */}
+      <div className="bottom-bar">
+        {!gameStarted && !tree.every((slot) => slot.placed) && (
+          <button className="start-btn" onClick={handleStartGame}>Start Game</button>
+        )}
+        {gameCompleted && currentLevel < MAX_LEVEL && (
+          <button className="next-level-btn" onClick={handleNextLevel}>Next Level</button>
+        )}
+        <div className="time-display">Time: {timeElapsed}s</div>
+      </div>
+
+      {/* Win Message */}
       <AnimatePresence>
         {tree.every((slot) => slot.placed) && (
-          <motion.div
-            className="win-message"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1.2 }}
-            exit={{ opacity: 0 }}
-            transition={{ type: "spring", stiffness: 100 }}
-          >
+          <motion.div className="win-message" initial={{ scale: 0 }} animate={{ scale: 1.2 }} exit={{ opacity: 0 }} transition={{ type: "spring", stiffness: 100 }}>
             🎉 You completed the family tree!
           </motion.div>
         )}
