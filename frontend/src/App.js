@@ -15,6 +15,7 @@ import GuardianDashboard from "./components/GuardianDashboard";
 import Task from "./pages/Task";
 import AstrayGame from "./components/games/AstrayGame"; // Astray Game
 import TrafficRunGame from "./components/games/TrafficRunGame"; // Traffic Run Game
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/games/5" element={<AstrayGame />} />
         {/* Route for Traffic Run Game */}
         <Route path="/games/6" element={<TrafficRunGame />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
   );

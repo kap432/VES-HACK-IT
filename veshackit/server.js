@@ -46,7 +46,7 @@ const patientRoutes = require("./routes/patient"); // Added patient routes
 const guardianRoutes = require("./routes/guardian");
 const tasksRoutes = require("./routes/tasks");
 const familyRoutes = require("./routes/family");
-// ...
+const detailRoutes = require("./routes/detail");
 
 // Use Routes
 app.use("/api/auth", authRoutes);
@@ -57,6 +57,7 @@ app.use("/api/patient", patientRoutes); // New route for patients
 app.use("/api/guardian", guardianRoutes);
 app.use("/api/tasks", tasksRoutes);
 app.use("/api/family", familyRoutes);
+app.use("/api/detail", detailRoutes);
 
 // Default Route
 app.get("/", (req, res) => {

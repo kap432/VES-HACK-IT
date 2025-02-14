@@ -104,7 +104,7 @@ const PatientDashboard = () => {
         <div className="menu">
           <Link to="/dashboard">Home</Link>
           <Link to="/games">Games</Link>
-          <Link to="/profile">Profile</Link>
+          <Link to="/pages/profile">Profile</Link>
           <Link to="/tasks">Tasks</Link>
         </div>
         <div className="profile-dropdown" ref={dropdownRef}>
