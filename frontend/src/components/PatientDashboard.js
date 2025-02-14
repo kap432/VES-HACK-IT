@@ -33,6 +33,7 @@ const PatientDashboard = () => {
     };
   }, []);
 
+  // Fetch user details from the details endpoint (which includes profilePic)
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -41,14 +42,15 @@ const PatientDashboard = () => {
         navigate("/login");
         return;
       }
-      const res = await axios.get("http://localhost:5000/api/auth/user", {
+      // NOTE: Changed endpoint from /api/auth/user to /api/detail
+      const res = await axios.get("http://localhost:5000/api/detail", {
         headers: { "x-auth-token": token },
       });
-      console.log("User data fetched:", res.data);
+      console.log("User details fetched:", res.data);
       setUser(res.data);
     } catch (error) {
-      console.error("Failed to load user data:", error);
-      setError("Failed to load user data.");
+      console.error("Failed to load user details:", error);
+      setError("Failed to load user details.");
     }
   };
 
@@ -114,23 +116,42 @@ const PatientDashboard = () => {
           <Link to="/tasks">Tasks</Link>
         </div>
         <div className="profile-dropdown" ref={dropdownRef}>
-          <img
-            src={user?.profilePic || "/profile-icon.png"}
-            alt="Profile"
-            className="profile-pic"
-            onClick={toggleDropdown}
-          />
+          {user?.profilePic ? (
+            <img
+              src={`http://localhost:5000/${user.profilePic.replace(/\\/g, "/")}`}
+              alt="Profile"
+              className="profile-pic"
+              onClick={toggleDropdown}
+            />
+          ) : (
+            <img
+              src="/default-profile.png"
+              alt="Default Profile"
+              className="profile-pic"
+              onClick={toggleDropdown}
+            />
+          )}
           {isDropdownOpen && (
             <div className="dropdown-menu">
               <div className="dropdown-header">
-                <img
-                  src={user?.profilePic || "/profile-icon.png"}
-                  alt="Profile"
-                  className="dropdown-profile-pic"
-                />
+                {user?.profilePic ? (
+                  <img
+                    src={`http://localhost:5000/${user.profilePic.replace(/\\/g, "/")}`}
+                    alt="Profile"
+                    className="dropdown-profile-pic"
+                  />
+                ) : (
+                  <img
+                    src="/default-profile.png"
+                    alt="Default Profile"
+                    className="dropdown-profile-pic"
+                  />
+                )}
                 <div className="dropdown-user-info">
                   <p className="dropdown-name">{user?.name || "User Name"}</p>
-                  <p className="dropdown-email">{user?.email || "user@example.com"}</p>
+                  <p className="dropdown-email">
+                    {user?.email || "user@example.com"}
+                  </p>
                 </div>
               </div>
               <div className="dropdown-divider" />
