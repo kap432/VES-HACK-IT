@@ -37,7 +37,7 @@ function App() {
         <Route path="/games/5" element={<AstrayGame />} />
         {/* Route for Traffic Run Game */}
         <Route path="/games/6" element={<TrafficRunGame />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/pages/profile" element={<Profile />} />
       </Routes>
     </Router>
   );
