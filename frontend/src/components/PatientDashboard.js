@@ -94,6 +94,12 @@ const PatientDashboard = () => {
     setIsDropdownOpen((prev) => !prev);
   };
 
+  // Logout function: clear token and navigate to login page
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <>
       {/* Navbar */}
@@ -128,16 +134,16 @@ const PatientDashboard = () => {
                 </div>
               </div>
               <div className="dropdown-divider" />
-              <Link to="/profile" className="dropdown-item">
+              <Link to="/pages/profile" className="dropdown-item">
                 Profile
               </Link>
               <Link to="/settings" className="dropdown-item">
                 Settings
               </Link>
               <div className="dropdown-divider" />
-              <a href="/logout" className="dropdown-item">
+              <button onClick={handleLogout} className="dropdown-item logout-btn">
                 Sign out
-              </a>
+              </button>
             </div>
           )}
         </div>

@@ -34,9 +34,18 @@ const GuardianDashboard = () => {
     navigate(`/patient-games/${patientId}`);
   };
 
+  // Logout function: clear token and redirect to login
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <div className="guardian-dashboard">
       <h2>Guardian Dashboard</h2>
+      <button onClick={handleLogout} className="logout-btn">
+        Logout
+      </button>
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       {playersData.length > 0 ? (
         <div className="players-list">
@@ -49,7 +58,6 @@ const GuardianDashboard = () => {
               <p>
                 <strong>Email:</strong> {player.email}
               </p>
-              {/* Optionally display a summary of game progress if desired */}
               <button onClick={() => handleViewGames(player._id)}>
                 View Games
               </button>
