@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const passport = require("passport");
 const session = require("express-session");
+const path = require("path");
 
 // Import Passport authentication
 require("./auth/googleAuth");
@@ -15,13 +16,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
+// Serve the uploads folder as static assets
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // Express session middleware (Required for Passport)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "thisshouldbeabettersecret!",
     resave: false,
     saveUninitialized: false,
-  }),
+  })
 );
 
 // Initialize Passport.js

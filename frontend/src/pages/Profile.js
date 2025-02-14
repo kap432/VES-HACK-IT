@@ -8,18 +8,29 @@ const Profile = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [updateMessage, setUpdateMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // Fields for text-based details
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editAge, setEditAge] = useState("");
   const [editGender, setEditGender] = useState("");
   const [editBirthdate, setEditBirthdate] = useState("");
-  
+
   // For profile photo file
   const [selectedFile, setSelectedFile] = useState(null);
 
   const token = localStorage.getItem("token");
+
+  // Helper function for error logging
+  const logError = (error, customMessage) => {
+    const errorDetails = error.response ? error.response.data : error.message;
+    console.error(customMessage, errorDetails);
+    // Optional: Send error logs to your backend logging endpoint
+    // axios.post("http://localhost:5000/api/log", {
+    //   message: customMessage,
+    //   error: errorDetails,
+    // });
+  };
 
   // Fetch profile details on mount
   useEffect(() => {
@@ -38,10 +49,7 @@ const Profile = () => {
           res.data.birthdate ? res.data.birthdate.substring(0, 10) : ""
         );
       } catch (error) {
-        console.error(
-          "Error fetching profile:",
-          error.response ? error.response.data : error.message
-        );
+        logError(error, "Error fetching profile:");
         setErrorMessage("Failed to load profile.");
       }
     };
@@ -56,7 +64,7 @@ const Profile = () => {
   // Handle update submission (includes photo upload if file selected)
   const handleUpdate = async (e) => {
     e.preventDefault();
-    
+
     // If a new file is selected, upload it first
     if (selectedFile) {
       const formData = new FormData();
@@ -75,10 +83,7 @@ const Profile = () => {
         // Update local profile state with new photo
         setProfile(photoRes.data.detail);
       } catch (error) {
-        console.error(
-          "Error uploading photo:",
-          error.response ? error.response.data : error.message
-        );
+        logError(error, "Error uploading photo:");
         setErrorMessage("Failed to update profile photo.");
         return; // Stop the update if photo upload fails
       }
@@ -98,7 +103,10 @@ const Profile = () => {
         "http://localhost:5000/api/detail",
         payload,
         {
-          headers: { "x-auth-token": token, "Content-Type": "application/json" },
+          headers: {
+            "x-auth-token": token,
+            "Content-Type": "application/json",
+          },
         }
       );
       console.log("Update response:", res.data);
@@ -107,10 +115,7 @@ const Profile = () => {
       setIsEditing(false);
       setSelectedFile(null); // Clear the file selection
     } catch (error) {
-      console.error(
-        "Error updating profile:",
-        error.response ? error.response.data : error.message
-      );
+      logError(error, "Error updating profile:");
       setErrorMessage("Failed to update profile.");
     }
   };
@@ -122,19 +127,36 @@ const Profile = () => {
       
       {profile ? (
         <div className="profile-detail">
-          <p><strong>User ID:</strong> {profile._id}</p>
           {profile.profilePic ? (
-            <img src={`/${profile.profilePic}`} alt="Profile" className="profile-photo" />
+            <img
+              src={`http://localhost:5000/${profile.profilePic.replace(/\\/g, "/")}`}
+              alt="Profile"
+              className="profile-photo"
+            />
           ) : (
-            <img src="/default-profile.png" alt="Default Profile" className="profile-photo" />
+            <img
+              src="/default-profile.png"
+              alt="Default Profile"
+              className="profile-photo"
+            />
           )}
-          <p><strong>Name:</strong> {profile.name}</p>
-          <p><strong>Email:</strong> {profile.email}</p>
-          <p><strong>Age:</strong> {profile.age || "Not specified"}</p>
-          <p><strong>Gender:</strong> {profile.gender || "Not specified"}</p>
+          <p>
+            <strong>Name:</strong> {profile.name}
+          </p>
+          <p>
+            <strong>Email:</strong> {profile.email}
+          </p>
+          <p>
+            <strong>Age:</strong> {profile.age || "Not specified"}
+          </p>
+          <p>
+            <strong>Gender:</strong> {profile.gender || "Not specified"}
+          </p>
           <p>
             <strong>Birthdate:</strong>{" "}
-            {profile.birthdate ? new Date(profile.birthdate).toLocaleDateString() : "Not specified"}
+            {profile.birthdate
+              ? new Date(profile.birthdate).toLocaleDateString()
+              : "Not specified"}
           </p>
           <button onClick={() => setIsEditing(true)} className="edit-btn">
             Edit Profile
