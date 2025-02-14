@@ -8,6 +8,7 @@
     "cra-template": "1.2.0",
     "framer-motion": "^12.3.1",
     "howler": "^2.2.4",
+    "multer": "^1.4.5-lts.1",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
     "react-confetti": "^6.2.2",

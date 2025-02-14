@@ -6,13 +6,19 @@ import "./Profile.css";
 const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [updateMessage, setUpdateMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Fields for text-based details
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editAge, setEditAge] = useState("");
   const [editGender, setEditGender] = useState("");
   const [editBirthdate, setEditBirthdate] = useState("");
-  const [updateMessage, setUpdateMessage] = useState("");
+  
+  // For profile photo file
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const token = localStorage.getItem("token");
 
   // Fetch profile details on mount
@@ -23,7 +29,7 @@ const Profile = () => {
           headers: { "x-auth-token": token },
         });
         setProfile(res.data);
-        // Pre-fill edit form with fetched values; convert null values to empty string
+        // Pre-fill edit form values; convert null values to empty strings
         setEditName(res.data.name || "");
         setEditEmail(res.data.email || "");
         setEditAge(res.data.age != null ? res.data.age : "");
@@ -42,10 +48,43 @@ const Profile = () => {
     fetchProfile();
   }, [token]);
 
-  // Handle update submission (PATCH)
+  // Handle file input change for profile photo
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  // Handle update submission (includes photo upload if file selected)
   const handleUpdate = async (e) => {
     e.preventDefault();
-    // Create the payload
+    
+    // If a new file is selected, upload it first
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append("profilePic", selectedFile);
+      try {
+        const photoRes = await axios.post(
+          "http://localhost:5000/api/detail/photo",
+          formData,
+          {
+            headers: {
+              "x-auth-token": token,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        // Update local profile state with new photo
+        setProfile(photoRes.data.detail);
+      } catch (error) {
+        console.error(
+          "Error uploading photo:",
+          error.response ? error.response.data : error.message
+        );
+        setErrorMessage("Failed to update profile photo.");
+        return; // Stop the update if photo upload fails
+      }
+    }
+
+    // Now update the rest of the profile details
     const payload = {
       name: editName,
       email: editEmail,
@@ -53,10 +92,7 @@ const Profile = () => {
       gender: editGender,
       birthdate: editBirthdate,
     };
-
-    // Log the payload for debugging
     console.log("Updating profile with payload:", payload);
-
     try {
       const res = await axios.patch(
         "http://localhost:5000/api/detail",
@@ -69,6 +105,7 @@ const Profile = () => {
       setProfile(res.data.detail);
       setUpdateMessage(res.data.msg);
       setIsEditing(false);
+      setSelectedFile(null); // Clear the file selection
     } catch (error) {
       console.error(
         "Error updating profile:",
@@ -86,6 +123,11 @@ const Profile = () => {
       {profile ? (
         <div className="profile-detail">
           <p><strong>User ID:</strong> {profile._id}</p>
+          {profile.profilePic ? (
+            <img src={`/${profile.profilePic}`} alt="Profile" className="profile-photo" />
+          ) : (
+            <img src="/default-profile.png" alt="Default Profile" className="profile-photo" />
+          )}
           <p><strong>Name:</strong> {profile.name}</p>
           <p><strong>Email:</strong> {profile.email}</p>
           <p><strong>Age:</strong> {profile.age || "Not specified"}</p>
@@ -151,6 +193,15 @@ const Profile = () => {
               name="birthdate"
               value={editBirthdate || ""}
               onChange={(e) => setEditBirthdate(e.target.value)}
+            />
+          </label>
+          <label>
+            Profile Photo:
+            <input
+              type="file"
+              name="profilePic"
+              onChange={handleFileChange}
+              accept="image/*"
             />
           </label>
           <div className="form-buttons">

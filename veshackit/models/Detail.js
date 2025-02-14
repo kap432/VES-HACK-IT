@@ -26,7 +26,11 @@ const detailSchema = new mongoose.Schema({
   birthdate: {
     type: Date,
     default: null,
-  }
+  },
+  profilePic: {
+    type: String,
+    default: "", // can be an empty string if no photo uploaded
+  },
 });
 
 const Detail = mongoose.models.Detail || mongoose.model("Detail", detailSchema);
