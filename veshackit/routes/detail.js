@@ -74,31 +74,33 @@ router.get("/", authMiddleware, async (req, res) => {
 
 // PATCH /api/detail - Update profile details for the current user
 router.patch("/", authMiddleware, async (req, res) => {
-    try {
-      const { name, email, age, gender, birthdate } = req.body;
-      
-      // Convert and sanitize values:
-      const updateData = {
-        name,
-        email,
-        age: age && age.trim() !== "" ? Number(age) : null,
-        gender: gender && gender.trim() !== "" ? gender : null,
-        birthdate: birthdate && birthdate.trim() !== "" ? new Date(birthdate) : null,
-      };
-  
-      const updatedDetail = await Detail.findOneAndUpdate(
-        { user: req.user.id },
-        updateData,
-        { new: true, upsert: false }
-      );
-      if (!updatedDetail) {
-        return res.status(404).json({ msg: "Profile detail not found." });
-      }
-      res.json({ msg: "Profile updated successfully", detail: updatedDetail });
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      res.status(500).json({ msg: "Server error" });
+  try {
+    const { name, email, age, gender, birthdate } = req.body;
+    
+    const updateData = {
+      name,
+      email,
+      // For age: if it's a string, trim and convert; if already a number, leave it
+      age: (typeof age === "string" && age.trim() !== "") ? Number(age.trim()) : (typeof age === "number" ? age : null),
+      // For gender: if it's a string, trim; otherwise, set to null if empty
+      gender: (typeof gender === "string" && gender.trim() !== "") ? gender.trim() : null,
+      // For birthdate: if it's a string, trim and convert to Date; otherwise, set to null
+      birthdate: (typeof birthdate === "string" && birthdate.trim() !== "") ? new Date(birthdate.trim()) : null,
+    };
+
+    const updatedDetail = await Detail.findOneAndUpdate(
+      { user: req.user.id },
+      updateData,
+      { new: true, upsert: false }
+    );
+    if (!updatedDetail) {
+      return res.status(404).json({ msg: "Profile detail not found." });
     }
-  });
+    res.json({ msg: "Profile updated successfully", detail: updatedDetail });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
 
 module.exports = router;
