@@ -14,6 +14,18 @@ const detailSchema = new mongoose.Schema({
   email: { 
     type: String, 
     required: true 
+  },
+  age: {
+    type: Number,
+    default: null,
+  },
+  gender: {
+    type: String,
+    default: null,
+  },
+  birthdate: {
+    type: Date,
+    default: null,
   }
 });
 

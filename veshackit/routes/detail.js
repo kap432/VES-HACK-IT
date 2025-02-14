@@ -33,22 +33,31 @@ router.get("/", authMiddleware, async (req, res) => {
 
 // PATCH /api/detail - Update profile details for the current user
 router.patch("/", authMiddleware, async (req, res) => {
-  try {
-    const { name, email } = req.body;
-    // Update the Detail document for the logged-in user
-    const updatedDetail = await Detail.findOneAndUpdate(
-      { user: req.user.id },
-      { name, email },
-      { new: true }
-    );
-    if (!updatedDetail) {
-      return res.status(404).json({ msg: "Profile detail not found." });
+    try {
+      const { name, email, age, gender, birthdate } = req.body;
+      
+      // Convert and sanitize values:
+      const updateData = {
+        name,
+        email,
+        age: age && age.trim() !== "" ? Number(age) : null,
+        gender: gender && gender.trim() !== "" ? gender : null,
+        birthdate: birthdate && birthdate.trim() !== "" ? new Date(birthdate) : null,
+      };
+  
+      const updatedDetail = await Detail.findOneAndUpdate(
+        { user: req.user.id },
+        updateData,
+        { new: true, upsert: false }
+      );
+      if (!updatedDetail) {
+        return res.status(404).json({ msg: "Profile detail not found." });
+      }
+      res.json({ msg: "Profile updated successfully", detail: updatedDetail });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ msg: "Server error" });
     }
-    res.json({ msg: "Profile updated successfully", detail: updatedDetail });
-  } catch (error) {
-    console.error("Error updating profile detail:", error);
-    res.status(500).json({ msg: "Server error" });
-  }
-});
+  });
 
 module.exports = router;
