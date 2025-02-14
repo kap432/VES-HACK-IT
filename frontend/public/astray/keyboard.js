@@ -1,4 +1,4 @@
-/*! 
+/*!
  * KeyboardJS
  * 
  * Copyright 2011, Robert William Hurst
@@ -15,7 +15,7 @@
     }
 }(this, function() {
 
-    //polyfills for ms's peice o' shit browsers
+    // Polyfill for older browsers
     function bind(target, type, handler) { 
         if (target.addEventListener) { 
             target.addEventListener(type, handler, false); 
@@ -27,7 +27,7 @@
     }
     [].indexOf||(Array.prototype.indexOf=function(a,b,c){for(c=this.length,b=(c+~~b)%c;b<c&&(!(b in this)||this[b]!==a);b++);return b^c?b:-1;});
 
-    //locals
+    // Local key definitions
     var locals = {
         'us': {
             "backspace": 8,
@@ -76,81 +76,59 @@
             "closebracket": 221,
             "singlequote": 222
         }
-        //If you create a new local please submit it as a pull request or post it in the issue tracker.
     };
 
-    //keys
+    // Variables for key state management
     var keys = locals['us'],
         activeKeys = [],
         activeBindings = {},
         keyBindingGroups = [];
 
-    //adds keys to the active keys array
+    // Remove console logging in keydown event
     bind(document, "keydown", function(event) {
-        // Debug log for keydown events
-        console.log("Keydown event received. KeyCode:", event.keyCode);
-        //lookup the key pressed and save it to the active keys array
         for (var key in keys) {
-            if(keys.hasOwnProperty(key) && event.keyCode === keys[key]) {
-                if(activeKeys.indexOf(key) < 0) {
+            if (keys.hasOwnProperty(key) && event.keyCode === keys[key]) {
+                if (activeKeys.indexOf(key) < 0) {
                     activeKeys.push(key);
-                    console.log("Added key to activeKeys:", key, activeKeys);
                 }
             }
         }
-        //execute the first callback for the longest key binding that matches the active keys
         return executeActiveKeyBindings(event);
     });
 
-    //removes keys from the active array
+    // Remove console logging in keyup event
     bind(document, "keyup", function (event) {
-        // Debug log for keyup events
-        console.log("Keyup event received. KeyCode:", event.keyCode);
-        //lookup the key released and prune it from the active keys array
         for(var key in keys) {
             if(keys.hasOwnProperty(key) && event.keyCode === keys[key]) {
                 var iAK = activeKeys.indexOf(key);
                 if(iAK > -1) {
                     activeKeys.splice(iAK, 1);
-                    console.log("Removed key from activeKeys:", key, activeKeys);
                 }
             }
         }
-        //execute the end callback on the active key binding
         return pruneActiveKeyBindings(event);
     });
 
-    //bind to the window blur event and clear all pressed keys
+    // Remove console logging in window blur event
     bind(window, "blur", function(event) {
-        console.log("Window blur event: clearing active keys.");
         activeKeys = [];
-        //execute the end callback on the active key binding
         return pruneActiveKeyBindings(event);
     });
 
-    /**
-     * Generates an array of active key bindings
-     */
     function queryActiveBindings() {
         var bindingStack = [];
-        //loop through the key binding groups by number of keys.
         for(var keyCount = keyBindingGroups.length; keyCount > -1; keyCount -= 1) {
             if(keyBindingGroups[keyCount]) {
                 var KeyBindingGroup = keyBindingGroups[keyCount];
-                //loop through the key bindings of the same key length.
                 for(var bindingIndex = 0; bindingIndex < KeyBindingGroup.length; bindingIndex += 1) {
                     var binding = KeyBindingGroup[bindingIndex],
-                        //assume the binding is active till a required key is found to be unsatisfied
                         keyBindingActive = true;
-                    //loop through each key required by the binding.
                     for(var keyIndex = 0; keyIndex < binding.keys.length;  keyIndex += 1) {
                         var key = binding.keys[keyIndex];
-                        //if the current key is not in the active keys array then mark the binding as inactive
                         if(activeKeys.indexOf(key) < 0) {
                             keyBindingActive = false;
                         }
                     }
-                    //if the key combo is still active then push it into the binding stack
                     if(keyBindingActive) {
                         bindingStack.push(binding);
                     }
@@ -160,10 +138,6 @@
         return bindingStack;
     }
 
-    /**
-     * Collects active keys, sets active binds and fires on key down callbacks
-     * @param event
-     */
     function executeActiveKeyBindings(event) {
         if(activeKeys < 1) {
             return true;
@@ -171,11 +145,9 @@
         var bindingStack = queryActiveBindings(),
             spentKeys = [],
             output;
-        //loop through each active binding
         for (var bindingIndex = 0; bindingIndex < bindingStack.length; bindingIndex += 1) {
             var binding = bindingStack[bindingIndex],
                 usesSpentKey = false;
-            //check each of the required keys. Make sure they have not been used by another binding
             for(var keyIndex = 0; keyIndex < binding.keys.length; keyIndex += 1) {
                 var key = binding.keys[keyIndex];
                 if(spentKeys.indexOf(key) > -1) {
@@ -183,19 +155,15 @@
                     break;
                 }
             }
-            //if the binding does not use a key that has been spent then execute it
             if(!usesSpentKey) {
-                //fire the callback
                 if(typeof binding.callback === "function") {
                     if(!binding.callback(event, binding.keys, binding.keyCombo)) {
                         output = false;
                     }
                 }
-                //add the binding's combo to the active bindings array
                 if(!activeBindings[binding.keyCombo]) {
                     activeBindings[binding.keyCombo] = binding;
                 }
-                //add the current key binding's keys to the spent keys array
                 for(var keyIndex = 0; keyIndex < binding.keys.length; keyIndex += 1) {
                     var key = binding.keys[keyIndex];
                     if(spentKeys.indexOf(key) < 0) {
@@ -210,19 +178,13 @@
         return output;
     }
 
-    /**
-     * Removes no longer active keys and fires the on key up callbacks for associated active bindings.
-     * @param event
-     */
     function pruneActiveKeyBindings(event) {
         var bindingStack = queryActiveBindings();
         var output;
-        //loop through the active combos
         for(var bindingCombo in activeBindings) {
             if(activeBindings.hasOwnProperty(bindingCombo)) {
                 var binding = activeBindings[bindingCombo],
                     active = false;
-                //loop through the active bindings
                 for(var bindingIndex = 0; bindingIndex < bindingStack.length; bindingIndex += 1) {
                     var activeCombo = bindingStack[bindingIndex].keyCombo;
                     if(activeCombo === bindingCombo) {
@@ -230,7 +192,6 @@
                         break;
                     }
                 }
-                //if the combo is no longer active then fire its end callback and remove it
                 if(!active) {
                     if(typeof binding.endCallback === "function") {
                         if(!binding.endCallback(event, binding.keys, binding.keyCombo)) {
@@ -244,15 +205,6 @@
         return output;
     }
 
-    /**
-     * Binds a on key down and on key up callback to a key or key combo.
-     * Accepts a string containing the name of each key you want to bind to, comma separated.
-     * If you want to bind a combo then use the plus sign to link keys together.
-     * Example: 'ctrl + x, ctrl + c' will fire if Control and x or c are pressed at the same time.
-     * @param keyCombo
-     * @param callback
-     * @param endCallback
-     */
     function bindKey(keyCombo, callback, endCallback) {
         function clear() {
             if(keys && keys.length) {
@@ -284,18 +236,6 @@
         };
     }
 
-    /**
-     * Binds keys or key combos to an axis.
-     * The keys should be in the following order: up, down, left, right.
-     * If any of the bound keys or key combos are active the callback will fire.
-     * The callback will be passed an array containing two numbers [x, y].
-     * Both have a possible range of -1, 0, or 1.
-     * @param up
-     * @param down
-     * @param left
-     * @param right
-     * @param callback
-     */
     function bindAxis(up, down, left, right, callback) {
         function clear() {
             if(typeof clearUp === 'function') { clearUp(); }
@@ -347,10 +287,6 @@
         };
     }
 
-    /**
-     * Clears all key and key combo binds containing a given key or keys.
-     * @param keys
-     */
     function unbindKey(keys) {
         if(keys === 'all') {
             keyBindingGroups = [];
@@ -386,26 +322,14 @@
         }
     }
 
-    /**
-     * Gets an array of active keys.
-     */
     function getActiveKeys() {
         return activeKeys;
     }
 
-    /**
-     * Adds a new keyboard locale not supported by KeyboardJS.
-     * @param local
-     * @param keys
-     */
     function addLocale(local, keys) {
         locals[local] = keys;
     }
 
-    /**
-     * Changes the keyboard locale.
-     * @param local
-     */
     function setLocale(local) {
         if(locals[local]) {
             keys = locals[local];
@@ -442,10 +366,8 @@ function triggerArrowKey(keyName) {
         case 'up':    keyCode = 38; break;
         case 'down':  keyCode = 40; break;
         default: 
-            console.warn("triggerArrowKey: Unknown keyName:", keyName);
             return;
     }
-    console.log(`Simulating ${keyName} key event (keydown).`);
     const event = new KeyboardEvent('keydown', {
         key: keyName,
         keyCode: keyCode,
@@ -453,9 +375,7 @@ function triggerArrowKey(keyName) {
         bubbles: true
     });
     document.dispatchEvent(event);
-    // Optionally, dispatch a keyup event after a short delay.
     setTimeout(() => {
-        console.log(`Simulating ${keyName} key event (keyup).`);
         const upEvent = new KeyboardEvent('keyup', {
             key: keyName,
             keyCode: keyCode,
@@ -469,52 +389,41 @@ function triggerArrowKey(keyName) {
 // Map Arduino value to arrow keys.
 function processArduinoData(value) {
     const trimmed = value.trim();
-    console.log("Received Arduino data:", trimmed);
     switch(trimmed) {
         case '0':
-            console.log('Arduino: Moving right');
             triggerArrowKey('right');
             break;
         case '1':
-            console.log('Arduino: Moving left');
             triggerArrowKey('left');
             break;
         case '2':
-            console.log('Arduino: Moving up');
             triggerArrowKey('up');
             break;
         case '3':
-            console.log('Arduino: Moving down');
             triggerArrowKey('down');
             break;
         default:
-            console.log('Arduino: Unknown value:', trimmed);
+            break;
     }
 }
 
 // Async function to connect to the serial port and continuously read Arduino data.
 async function connectSerial() {
     if (!('serial' in navigator)) {
-        console.error('Web Serial API not supported in this browser.');
         return;
     }
     try {
-        console.log("Requesting serial port...");
         const port = await navigator.serial.requestPort();
-        console.log("Serial port selected. Opening port...");
         await port.open({ baudRate: 115200 });
-        console.log("Serial port opened at 115200 baud.");
         const reader = port.readable.getReader();
         const decoder = new TextDecoder();
         while (true) {
             const { value, done } = await reader.read();
             if (done) {
-                console.log("Reader done.");
                 break;
             }
             if (value) {
                 const text = decoder.decode(value);
-                console.log("Raw serial data:", text);
                 text.split(/\r?\n/).forEach(line => {
                     if(line) {
                         processArduinoData(line);
@@ -523,12 +432,6 @@ async function connectSerial() {
             }
         }
     } catch (err) {
-        console.error('Error in serial communication:', err);
+        // Error handling (if needed)
     }
 }
-
-// To start the serial connection, you can call connectSerial() on a button click.
-// For example, add the following HTML:
-// <button id="connect">Connect to Arduino</button>
-// And then attach the listener:
-// document.getElementById('connect').addEventListener('click', connectSerial);
