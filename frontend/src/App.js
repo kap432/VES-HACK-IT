@@ -1,3 +1,4 @@
+// frontend/src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
@@ -10,8 +11,9 @@ import MathQuiz from "./components/games/MathQuiz";
 import WordScramble from "./components/games/WordScramble";
 import FamilyTreeGame from "./components/games/FamilyTreeGame";
 import PatientGames from "./components/PatientGames";
-import GuardianDashboard from "./components/GuardianDashboard"; // New import
+import GuardianDashboard from "./components/GuardianDashboard";
 import Task from "./pages/Task";
+import AstrayGame from "./components/games/AstrayGame"; // Import from the new location
 
 function App() {
   return (
@@ -29,7 +31,8 @@ function App() {
         <Route path="/games/family-tree" element={<FamilyTreeGame />} />
         <Route path="/patient-games/:patientId" element={<PatientGames />} />
         <Route path="/tasks" element={<Task />} />
-        
+        {/* Route for Astray Game */}
+        <Route path="/games/5" element={<AstrayGame />} />
       </Routes>
     </Router>
   );

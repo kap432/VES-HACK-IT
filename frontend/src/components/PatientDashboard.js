@@ -1,7 +1,7 @@
 // frontend/src/components/PatientDashboard.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import ProgressGraph from "./ProgressGraph";
 import "./patient-dashboard.css";
 
@@ -10,6 +10,8 @@ const PatientDashboard = () => {
   const [games, setGames] = useState([]);
   const [progressData, setProgressData] = useState([]);
   const [error, setError] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,115 +20,129 @@ const PatientDashboard = () => {
     fetchProgress();
   }, []);
 
-  // Fetch User Data
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
+        console.log("No token found, redirecting to login");
         navigate("/login");
         return;
       }
       const res = await axios.get("http://localhost:5000/api/auth/user", {
         headers: { "x-auth-token": token },
       });
+      console.log("User data fetched:", res.data);
       setUser(res.data);
     } catch (error) {
+      console.error("Failed to load user data:", error);
       setError("Failed to load user data.");
     }
   };
 
-  // Fetch Games from API
   const fetchGames = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
+        console.log("No token found in fetchGames, redirecting to login");
         navigate("/login");
         return;
       }
       const res = await axios.get("http://localhost:5000/api/patient/games", {
         headers: { "x-auth-token": token },
       });
+      console.log("Games fetched:", res.data);
       setGames(res.data);
     } catch (error) {
+      console.error("Failed to load games:", error);
       setError("Failed to load games.");
     }
   };
 
-  // Fetch Progress Data
   const fetchProgress = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
+        console.log("No token found in fetchProgress, redirecting to login");
         navigate("/login");
         return;
       }
       const res = await axios.get("http://localhost:5000/api/patient/progress", {
         headers: { "x-auth-token": token },
       });
+      console.log("Progress fetched:", res.data);
       setProgressData(res.data);
     } catch (error) {
+      console.error("Failed to load progress:", error);
       setError("Failed to load progress.");
     }
   };
 
-  // Add static Family Tree Game to the games list
-  const familyTreeGame = {
-    id: "family-tree",
-    title: "Family Tree Game",
-    description: "Rebuild your family tree and remember your loved ones!",
-    image: "/family-tree-logo.png", // Update the path to your image asset
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => !prev);
   };
-
-  // Merge the fetched games with the Family Tree game
-  const mergedGames = [...games, familyTreeGame];
 
   return (
     <>
       {/* Navbar */}
       <nav className="navbar">
-        <a href="/" className="logo">
-          GameTherapy
-        </a>
+        <a href="/" className="logo">GameTherapy</a>
         <div className="menu">
-          <a href="/dashboard">Home</a>
-          <a href="/games">Games</a>
-          <a href="/profile">Profile</a>
-          {/* New Tasks menu item */}
-          <a href="/tasks">Tasks</a>
-          <a href="/logout">Logout</a>
+          <Link to="/dashboard">Home</Link>
+          <Link to="/games">Games</Link>
+          <Link to="/profile">Profile</Link>
+        </div>
+        <div className="profile-dropdown" ref={dropdownRef}>
+          <img
+            src={user?.profilePic || "/profile-icon.png"}
+            alt="Profile"
+            className="profile-pic"
+            onClick={toggleDropdown}
+          />
+          {isDropdownOpen && (
+            <div className="dropdown-menu">
+              <div className="dropdown-header">
+                <img
+                  src={user?.profilePic || "/profile-icon.png"}
+                  alt="Profile"
+                  className="dropdown-profile-pic"
+                />
+                <div className="dropdown-user-info">
+                  <p className="dropdown-name">{user?.name || "User Name"}</p>
+                  <p className="dropdown-email">{user?.email || "user@example.com"}</p>
+                </div>
+              </div>
+              <div className="dropdown-divider" />
+              <Link to="/profile" className="dropdown-item">Profile</Link>
+              <Link to="/settings" className="dropdown-item">Settings</Link>
+              <div className="dropdown-divider" />
+              <a href="/logout" className="dropdown-item">Sign out</a>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Dashboard Container */}
       <div className="dashboard-container">
-        {/* Sidebar Profile */}
-        <aside className="sidebar">
-          {user && (
-            <>
-              <img
-                src={
-                  user.profilePic ||
-                  `https://yourserver.com/uploads/users/user_${user.id}.jpg`
-                }
-                alt="User Profile"
-              />
-              <h3>{user.name}</h3>
-              <p>{user.email}</p>
-              <button onClick={() => navigate("/logout")}>Logout</button>
-            </>
-          )}
-        </aside>
-
-        {/* Main Content */}
         <main className="main-content">
           {error && <p className="error">{error}</p>}
-
-          {/* Game Section */}
           <section className="game-section">
             <h2>Available Games</h2>
-            {mergedGames.length > 0 ? (
+            {games.length > 0 ? (
               <div className="game-grid">
-                {mergedGames.map((game) => (
+                {games.map((game) => (
                   <div className="game-card" key={game.id}>
                     <img
                       src={game.image || `/game_${game.id}.jpeg`}
@@ -141,11 +157,10 @@ const PatientDashboard = () => {
                 ))}
               </div>
             ) : (
-              <p>No games available.</p>
+              <p className="no-games">No games available.</p>
             )}
           </section>
 
-          {/* Progress Graph Section */}
           <section className="progress-section">
             <h2>Your Progress</h2>
             {progressData.length > 0 ? (
