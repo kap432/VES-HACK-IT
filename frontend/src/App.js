@@ -1,3 +1,4 @@
+// frontend/src/App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
@@ -10,8 +11,11 @@ import MathQuiz from "./components/games/MathQuiz";
 import WordScramble from "./components/games/WordScramble";
 import FamilyTreeGame from "./components/games/FamilyTreeGame";
 import PatientGames from "./components/PatientGames";
-import GuardianDashboard from "./components/GuardianDashboard"; // New import
+import GuardianDashboard from "./components/GuardianDashboard";
 import Task from "./pages/Task";
+import AstrayGame from "./components/games/AstrayGame"; // Astray Game
+import TrafficRunGame from "./components/games/TrafficRunGame"; // Traffic Run Game
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -26,10 +30,14 @@ function App() {
         <Route path="/games/2" element={<MathQuiz />} />
         <Route path="/games/3" element={<WordScramble />} />
         <Route path="/guardian-dashboard" element={<GuardianDashboard />} />
-        <Route path="/games/family-tree" element={<FamilyTreeGame />} />
+        <Route path="/games/4" element={<FamilyTreeGame />} />
         <Route path="/patient-games/:patientId" element={<PatientGames />} />
         <Route path="/tasks" element={<Task />} />
-        
+        {/* Route for Astray Game */}
+        <Route path="/games/5" element={<AstrayGame />} />
+        {/* Route for Traffic Run Game */}
+        <Route path="/games/6" element={<TrafficRunGame />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
   );

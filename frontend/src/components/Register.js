@@ -1,3 +1,4 @@
+// frontend/src/components/Register.js
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -8,8 +9,8 @@ const Register = () => {
     email: "",
     password: "",
     role: "player",
-    guardianEmail: "", // Guardian email input
-    selfMonitor: false, // Checkbox state
+    guardianEmail: "",
+    selfMonitor: false,
   });
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -23,7 +24,7 @@ const Register = () => {
     setUser((prevState) => ({
       ...prevState,
       selfMonitor: !prevState.selfMonitor,
-      guardianEmail: prevState.selfMonitor ? "" : prevState.guardianEmail, // Clear guardian email if self-monitoring
+      guardianEmail: prevState.selfMonitor ? "" : prevState.guardianEmail,
     }));
   };
 
@@ -32,19 +33,28 @@ const Register = () => {
     try {
       const requestBody = { ...user };
 
-      // Remove guardianEmail for guardians & doctors
+      // Remove guardianEmail and selfMonitor for non-players
       if (user.role !== "player") {
         delete requestBody.guardianEmail;
         delete requestBody.selfMonitor;
       } else if (user.selfMonitor) {
-        requestBody.guardianEmail = ""; // No guardian required if self-monitoring
+        requestBody.guardianEmail = "";
       }
 
-      await axios.post("http://localhost:5000/api/auth/register", requestBody, {
-        headers: { "Content-Type": "application/json" },
-      });
+      // Registration API call
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        requestBody,
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       console.log("Request Body:", requestBody);
+      // Use the returned token to create a new profile detail record
+      await axios.post(
+        "http://localhost:5000/api/detail",
+        { name: requestBody.name, email: requestBody.email },
+        { headers: { "x-auth-token": res.data.token, "Content-Type": "application/json" } }
+      );
 
       alert("Registration successful!");
       navigate("/login");
@@ -90,7 +100,6 @@ const Register = () => {
             className="w-full p-2 border border-gray-300 rounded-md"
           />
 
-          {/* Role Selection */}
           <select
             name="role"
             value={user.role}
@@ -103,7 +112,6 @@ const Register = () => {
             <option value="guardian">Guardian</option>
           </select>
 
-          {/* Show Guardian Input Only for Players */}
           {user.role === "player" && (
             <>
               <input
