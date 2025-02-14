@@ -98,11 +98,14 @@ const PatientDashboard = () => {
     <>
       {/* Navbar */}
       <nav className="navbar">
-        <a href="/" className="logo">GameTherapy</a>
+        <a href="/" className="logo">
+          GameTherapy
+        </a>
         <div className="menu">
           <Link to="/dashboard">Home</Link>
           <Link to="/games">Games</Link>
           <Link to="/profile">Profile</Link>
+          <Link to="/tasks">Tasks</Link>
         </div>
         <div className="profile-dropdown" ref={dropdownRef}>
           <img
@@ -125,10 +128,16 @@ const PatientDashboard = () => {
                 </div>
               </div>
               <div className="dropdown-divider" />
-              <Link to="/profile" className="dropdown-item">Profile</Link>
-              <Link to="/settings" className="dropdown-item">Settings</Link>
+              <Link to="/profile" className="dropdown-item">
+                Profile
+              </Link>
+              <Link to="/settings" className="dropdown-item">
+                Settings
+              </Link>
               <div className="dropdown-divider" />
-              <a href="/logout" className="dropdown-item">Sign out</a>
+              <a href="/logout" className="dropdown-item">
+                Sign out
+              </a>
             </div>
           )}
         </div>

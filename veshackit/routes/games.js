@@ -1,9 +1,8 @@
-// backend/routes/games.js
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 
-// Sample Games Data (including the Astray game)
+// Sample Games Data (including Traffic Run Game)
 const games = [
   {
     id: 1,
@@ -33,7 +32,13 @@ const games = [
     id: 5,
     title: "Astray",
     description: "Navigate the maze and find your way out in Astray!",
-    image: "/astray-logo.png", // Make sure this asset is in your public folder
+    image: "/astray-logo.png", // Ensure this asset is in your public folder
+  },
+  {
+    id: 6,
+    title: "Traffic Run",
+    description: "Guide your car safely through traffic in this exciting game!",
+    image: "/traffic-run-logo.png", // Make sure this asset is in your public folder
   },
 ];
 
@@ -48,6 +53,7 @@ const progressData = {
   gamesPlayed: [
     { game: "Memory Match", score: 80 },
     { game: "Math Quiz", score: 90 },
+    { game: "Traffic Run", score: 70 },
   ],
 };
 

@@ -1,9 +1,8 @@
-// backend/routes/games.js
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 
-// Sample Games Data (including the Astray game with numeric id)
+// Sample Games Data (including the Astray and Traffic Run games)
 const games = [
   {
     id: 1,
@@ -33,7 +32,13 @@ const games = [
     id: 5,
     title: "Astray",
     description: "Navigate the maze and find your way out in Astray!",
-    image: "/astray-logo.png", // Make sure you add this asset to your public folder
+    image: "/astray-logo.png", // Ensure this asset is in your public folder
+  },
+  {
+    id: 6,
+    title: "Traffic Run",
+    description: "Guide your car safely through heavy traffic!",
+    image: "/traffic-run-logo.png", // Ensure this asset is in your public folder
   },
 ];
 
@@ -48,9 +53,11 @@ const progressData = {
   gamesPlayed: [
     { game: "Memory Match", score: 80 },
     { game: "Math Quiz", score: 90 },
+    { game: "Traffic Run", score: 70 },
   ],
 };
 
+// GET User Progress
 router.get("/progress", authMiddleware, (req, res) => {
   console.log("Returning progress:", progressData);
   res.json(progressData);
