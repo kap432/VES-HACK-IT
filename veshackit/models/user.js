@@ -10,6 +10,12 @@ const UserSchema = new mongoose.Schema({
       return !this.googleId;
     },
   },
+  mobile: {
+    type: String,
+    required: true,
+    unique: true,
+    match: [/^\d{10}$/, "Invalid phone number format"], // Ensures 10-digit mobile number
+  },
   role: {
     type: String,
     enum: ["player", "doctor", "guardian"],

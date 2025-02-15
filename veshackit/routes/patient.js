@@ -40,6 +40,11 @@ const games = [
     description: "Guide your car safely through heavy traffic!",
     image: "/traffic-run-logo.png", // Ensure this asset is in your public folder
   },
+  { id: 7, 
+    title: "Story Game", 
+    description: "Choose a story from each level and solve puzzles to complete the narrative.", 
+    image: "/story-game-logo.png",
+  }
 ];
 
 // GET Available Games
