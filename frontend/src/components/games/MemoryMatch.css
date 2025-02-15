@@ -1,19 +1,27 @@
-.memory-container {
+.mm-memory-container {
   text-align: center;
   font-family: Arial, sans-serif;
+  height: 100vh;
+  width: 100vw;
 }
 
-.card-grid {
+#p time-memory{
+  color: #4caf50;
+  background-color: aqua;
+  display: flex;
+}
+
+.mm-card-grid {
   display: grid;
   grid-template-columns: repeat(4, 80px);
-  gap: 15px;
+  gap: 70px;
   justify-content: center;
-  margin-top: 20px;
+  /* margin-top: 20px; */
 }
 
-.card {
-  width: 80px;
-  height: 80px;
+.mm-card {
+  width: 100px;
+  height: 100px;
   font-size: 30px;
   background-color: #eee;
   display: flex;
@@ -25,13 +33,13 @@
   transition: all 0.3s ease;
 }
 
-.card.flipped {
+.mm-card.mm-flipped {
   background-color: #4caf50;
   color: white;
   border-color: #2e7d32;
 }
 
-.game-over {
+.mm-game-over {
   color: green;
   font-size: 24px;
   margin-top: 20px;

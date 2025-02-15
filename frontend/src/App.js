@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import Chatroom from "./components/chatroom";
 import EDiary from "./pages/Ediary";
 import Stories from "./pages/Stories";
+import StoryGame from "./components/games/StoryGame"; // Our Story Game component
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
         <Route path="/Chatroom" element={<Chatroom />} />
         <Route path="/pages/Ediary" element={<EDiary />} />
         <Route path="/pages/stories" element={<Stories />} />
+        <Route path="/games/7" element={<StoryGame />} /> {/* Route for Story Game */}
       </Routes>
     </Router>
   );

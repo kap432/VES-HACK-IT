@@ -58,7 +58,7 @@ const LandingPage = () => {
 
         <div id="name-vayudrishti">
           {/* <div id="landing-image"> */}
-          <div id="vayu">Playwise</div>
+          <div id="vayu">GameTherapy</div>
           <div id="drishti">Gaming Made for YouAdaptive, Inclusive, Fun!</div>
         </div>
 
