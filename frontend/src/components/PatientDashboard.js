@@ -184,7 +184,7 @@ const PatientDashboard = () => {
         <main className="main-content">
           {error && <p className="error">{error}</p>}
           <section className="game-section">
-            <h2>Available Games</h2>
+            <h2>Play & Enjoy</h2>
             {games.length > 0 ? (
               <div className="game-grid">
                 {games.map((game) => (
