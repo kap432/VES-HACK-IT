@@ -277,10 +277,8 @@ body {
   height: 150px;
   border-radius: 8px;
   object-fit: cover;
-  object-position: center;
-  /* Ensures the image is centered */
-  display: block;
-  /* Removes any unwanted inline spacing */
+  object-position: center; /* Ensures the image is centered */
+  display: block; /* Removes any unwanted inline spacing */
   margin-bottom: 10px;
 }
 
