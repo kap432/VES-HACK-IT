@@ -17,6 +17,7 @@ import AstrayGame from "./components/games/AstrayGame"; // Astray Game
 import TrafficRunGame from "./components/games/TrafficRunGame"; // Traffic Run Game
 import Profile from "./pages/Profile";
 import Chatroom from "./components/chatroom";
+import EDiary from "./pages/Ediary";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         <Route path="/games/6" element={<TrafficRunGame />} />
         <Route path="/pages/profile" element={<Profile />} />
         <Route path="/Chatroom" element={<Chatroom />} />
+        <Route path="/pages/Ediary" element={<EDiary />} />
       </Routes>
     </Router>
   );

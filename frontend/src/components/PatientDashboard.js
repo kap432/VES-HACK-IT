@@ -114,6 +114,7 @@ const PatientDashboard = () => {
           <Link to="/games">Games</Link>
           <Link to="/pages/profile">Profile</Link>
           <Link to="/tasks">Tasks</Link>
+          <Link to="/pages/Ediary">e-Diary</Link>
         </div>
         <div className="profile-dropdown" ref={dropdownRef}>
           {user?.profilePic ? (

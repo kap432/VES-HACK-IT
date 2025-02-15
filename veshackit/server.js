@@ -65,6 +65,8 @@ const detailRoutes = require("./routes/detail");
 const notificationsRoutes = require("./routes/notifications");
 const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require("./routes/chat");
+const ediaryRoutes = require("./routes/ediary");
+
 
 // Use Routes
 app.use("/api/auth", authRoutes);
@@ -79,6 +81,7 @@ app.use("/api/detail", detailRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api", userRoutes);
 app.use("/api/chat", auth, chatRoutes);
+app.use("/api/ediary", ediaryRoutes);
 
 // Create a global object to track online users
 const onlineUsers = {};
