@@ -24,6 +24,18 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+// GET /api/ediary - Get e-diary entries for the logged-in user
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    // Find all diary entries for the user, sorted by timestamp (most recent first)
+    const entries = await EDiary.find({ user: req.user.id }).sort({ timestamp: -1 });
+    res.json(entries);
+  } catch (error) {
+    console.error("Error fetching e-diary entries:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
 // POST /api/ediary - Create a new e-diary entry
 router.post("/", authMiddleware, upload.single("voiceNote"), async (req, res) => {
   try {
@@ -34,12 +46,15 @@ router.post("/", authMiddleware, upload.single("voiceNote"), async (req, res) =>
     if (!req.file) {
       return res.status(400).json({ msg: "Voice note file is required." });
     }
-    // Save the file path (you can adjust this to generate a public URL if needed)
-    const voiceNotePath = req.file.path;
+    // Get the absolute path from multer
+    const absolutePath = req.file.path;
+    // Extract the relative path starting from "uploads"
+    const relativeVoiceNotePath = absolutePath.substring(absolutePath.indexOf("uploads"));
+
     const entry = new EDiary({
       user: req.user.id,
       title,
-      voiceNote: voiceNotePath,
+      voiceNote: relativeVoiceNotePath, // store relative path
     });
     await entry.save();
     res.status(201).json({ msg: "e-Diary entry created successfully", ediary: entry });

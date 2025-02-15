@@ -18,6 +18,7 @@ import TrafficRunGame from "./components/games/TrafficRunGame"; // Traffic Run G
 import Profile from "./pages/Profile";
 import Chatroom from "./components/chatroom";
 import EDiary from "./pages/Ediary";
+import Stories from "./pages/Stories";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
         <Route path="/pages/profile" element={<Profile />} />
         <Route path="/Chatroom" element={<Chatroom />} />
         <Route path="/pages/Ediary" element={<EDiary />} />
+        <Route path="/pages/stories" element={<Stories />} />
       </Routes>
     </Router>
   );

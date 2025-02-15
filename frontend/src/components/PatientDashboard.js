@@ -102,6 +102,11 @@ const PatientDashboard = () => {
     navigate("/login");
   };
 
+   // Navigate to the Stories page
+   const handleLookUpStories = () => {
+    navigate("/pages/stories");
+  };
+
   return (
     <>
       {/* Navbar */}
@@ -211,6 +216,11 @@ const PatientDashboard = () => {
             ) : (
               <p>No progress recorded yet.</p>
             )}
+          </section>
+          <section className="stories-section">
+            <button onClick={handleLookUpStories} className="stories-btn">
+              Look Up to Your Stories
+            </button>
           </section>
         </main>
       </div>
