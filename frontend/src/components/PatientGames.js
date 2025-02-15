@@ -44,6 +44,7 @@ const PatientGames = () => {
   const token = localStorage.getItem("token");
 
   // Family form states
+  const [familyFile, setFamilyFile] = useState(null);
   const [familyName, setFamilyName] = useState("");
   const [familyRelation, setFamilyRelation] = useState("");
   const [familyImageUrl, setFamilyImageUrl] = useState("");
@@ -228,15 +229,17 @@ const PatientGames = () => {
   const handleAddFamilyMember = async (e) => {
     e.preventDefault();
     try {
-      const payload = {
-        name: familyName,
-        relation: familyRelation,
-        imageUrl: familyImageUrl,
-      };
-      const res = await axios.post(
-        `http://localhost:5000/api/family/${patientId}`,
-        payload,
-        { headers: { "x-auth-token": token, "Content-Type": "application/json" } }
+      const formData = new FormData();
+      formData.append("name", familyName);
+      formData.append("relation", familyRelation);
+    // Append the file if available. Assume you store it in state as familyFile.
+      if (familyFile) {
+        formData.append("imageFile", familyFile);
+      }
+        const res = await axios.post(
+         `http://localhost:5000/api/family/${patientId}`,
+          formData,
+        { headers: { "x-auth-token": token, "Content-Type": "multipart/form-data" } }
       );
       setFamilyMessage(res.data.msg);
       setFamilyName("");
@@ -509,14 +512,18 @@ const PatientGames = () => {
           />
         </label>
         <label>
-          Image URL:
-          <input
-            type="text"
-            placeholder="Image URL (Optional)"
-            value={familyImageUrl}
-            onChange={(e) => setFamilyImageUrl(e.target.value)}
-          />
-        </label>
+  Upload Image:
+  <input
+    type="file"
+    name="imageFile"
+    onChange={(e) => {
+      // You might store the selected file in state if needed
+      // For this example, we'll assume you're using FormData in the handler.
+    }}
+    accept="image/*"
+  />
+</label>
+
         <button type="submit">Add Family Member</button>
       </form>
     </div>

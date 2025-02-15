@@ -3,9 +3,34 @@ const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const Family = require("../models/Family");
 const User = require("../models/user");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+// Define uploads folder for family images
+const familyUploadsFolder = path.join(__dirname, "../uploads/family");
+if (!fs.existsSync(familyUploadsFolder)) {
+  fs.mkdirSync(familyUploadsFolder, { recursive: true });
+}
+
+// Configure Multer storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, familyUploadsFolder);
+  },
+  filename: (req, file, cb) => {
+    const timestamp = Date.now();
+    let originalName = file.originalname.toLowerCase();
+    // Replace spaces with underscores and remove unwanted characters
+    originalName = originalName.replace(/\s+/g, '_').replace(/[^a-z0-9_\-\.]/g, '');
+    const newFileName = `${timestamp}_${originalName}`;
+    cb(null, newFileName);
+  },
+});
+const upload = multer({ storage: storage });
 
 // POST /api/family/:patientId - Add a family member record for a patient
-router.post("/:patientId", authMiddleware, async (req, res) => {
+router.post("/:patientId", authMiddleware, upload.single("imageFile"), async (req, res) => {
   try {
     // Ensure the requester is a guardian
     if (req.user.role !== "guardian") {
@@ -13,7 +38,7 @@ router.post("/:patientId", authMiddleware, async (req, res) => {
     }
 
     const { patientId } = req.params;
-    const { name, relation, imageUrl } = req.body;
+    const { name, relation } = req.body;
 
     // Validate required fields
     if (!name || !relation) {
@@ -26,11 +51,18 @@ router.post("/:patientId", authMiddleware, async (req, res) => {
       return res.status(404).json({ msg: "Patient not found or is not a player." });
     }
 
+    let imageUrl = "";
+    if (req.file) {
+      // Convert absolute file path to relative path starting from "uploads"
+      const absolutePath = req.file.path;
+      imageUrl = absolutePath.substring(absolutePath.indexOf("uploads"));
+    }
+
     const familyRecord = new Family({
       user: patientId,
       name,
       relation,
-      imageUrl: imageUrl || ""
+      imageUrl, // Store relative path
     });
 
     await familyRecord.save();
