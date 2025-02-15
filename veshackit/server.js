@@ -5,11 +5,18 @@ const cors = require("cors");
 const passport = require("passport");
 const session = require("express-session");
 const path = require("path");
-
+const http = require("http"); // Create HTTP server
+const { Server } = require("socket.io"); // Import socket.io 
 // Import Passport authentication
 require("./auth/googleAuth");
 
 const app = express();
+const server = http.createServer(app); // Attach HTTP server
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Adjust this for security in production
+  },
+});
 
 // Middleware
 app.use(express.json());
@@ -51,6 +58,8 @@ const guardianRoutes = require("./routes/guardian");
 const tasksRoutes = require("./routes/tasks");
 const familyRoutes = require("./routes/family");
 const detailRoutes = require("./routes/detail");
+const notificationsRoutes = require("./routes/notifications");
+const userRoutes = require("./routes/userRoutes"); // Adjust the path
 
 // Use Routes
 app.use("/api/auth", authRoutes);
@@ -62,6 +71,21 @@ app.use("/api/guardian", guardianRoutes);
 app.use("/api/tasks", tasksRoutes);
 app.use("/api/family", familyRoutes);
 app.use("/api/detail", detailRoutes);
+app.use("/api/notifications", notificationsRoutes);
+app.use("/api", userRoutes);
+
+// Socket.IO event handling
+io.on("connection", (socket) => {
+  console.log("🟢 User connected:", socket.id);
+
+  socket.on("newTaskAssigned", ({ patientId, message }) => {
+    io.emit(`taskNotification-${patientId}`, message); // Notify specific patient
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔴 User disconnected:", socket.id);
+  });
+});
 
 // Default Route
 app.get("/", (req, res) => {

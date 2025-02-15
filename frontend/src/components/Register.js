@@ -8,6 +8,7 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
+    mobile: "",
     role: "player",
     guardianEmail: "",
     selfMonitor: false,
@@ -99,7 +100,14 @@ const Register = () => {
             required
             className="w-full p-2 border border-gray-300 rounded-md"
           />
-
+          <input
+            type="tel"
+            name="mobile"
+            placeholder="Mobile Number"
+            onChange={handleChange}
+            required
+            className="w-full p-2 border border-gray-300 rounded-md"
+          />
           <select
             name="role"
             value={user.role}
