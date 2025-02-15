@@ -196,7 +196,13 @@ const PatientDashboard = () => {
               <p className="no-games">No games available.</p>
             )}
           </section>
-
+          <div className="chatroom-card">
+            <h2>Join the Chatroom</h2>
+            <p>Connect with others and discuss freely.</p>
+            <button onClick={() => navigate("/chatroom")}>
+              Enter Chatroom
+            </button>
+          </div>
           <section className="progress-section">
             <h2>Your Progress</h2>
             {progressData.length > 0 ? (
