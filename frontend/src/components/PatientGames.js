@@ -225,31 +225,41 @@ const PatientGames = () => {
     }
   };
 
-  // Handle Add Family Member
   const handleAddFamilyMember = async (e) => {
     e.preventDefault();
     try {
       const formData = new FormData();
       formData.append("name", familyName);
       formData.append("relation", familyRelation);
-    // Append the file if available. Assume you store it in state as familyFile.
+      // Append the file if available and log the action
       if (familyFile) {
         formData.append("imageFile", familyFile);
+        console.log("Appending file to formData:", familyFile.name);
+      } else {
+        console.log("No file selected.");
       }
-        const res = await axios.post(
-         `http://localhost:5000/api/family/${patientId}`,
-          formData,
+      // Log formData keys (for debugging purposes)
+      for (let key of formData.keys()) {
+        console.log("FormData key:", key);
+      }
+  
+      const res = await axios.post(
+        `http://localhost:5000/api/family/${patientId}`,
+        formData,
         { headers: { "x-auth-token": token, "Content-Type": "multipart/form-data" } }
       );
+      console.log("Family member added:", res.data);
       setFamilyMessage(res.data.msg);
       setFamilyName("");
       setFamilyRelation("");
       setFamilyImageUrl("");
+      setFamilyFile(null);
     } catch (error) {
       console.error("Error adding family record:", error.response?.data || error.message);
       setFamilyMessage("Failed to add family record.");
     }
   };
+  
 
   useEffect(() => {
     fetchPatientGames();
@@ -516,11 +526,12 @@ const PatientGames = () => {
   <input
     type="file"
     name="imageFile"
-    onChange={(e) => {
-      // You might store the selected file in state if needed
-      // For this example, we'll assume you're using FormData in the handler.
-    }}
     accept="image/*"
+    onChange={(e) => {
+      const file = e.target.files[0];
+      console.log("Selected file:", file);
+      setFamilyFile(file);
+    }}
   />
 </label>
 
