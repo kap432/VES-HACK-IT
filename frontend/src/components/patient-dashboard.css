@@ -180,57 +180,68 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
-  /* background-color: bisque; */
   padding: 10px;
-  /* border-radius: 8px; */
 }
 
-.game-card {
-  background: var(--secondary-color);
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 3px 6px var(--shadow-color);
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.game-card img {
+/* Default card styles */
+.game-card, .bot-card {
   width: 100%;
-  height: 150px;
-  border-radius: 8px;
-  object-fit: cover;
-  margin-bottom: 10px;
+  max-width: 300px;
+  margin: 10px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
 }
 
-.game-card h4 {
-  font-size: 1.1rem;
-  margin: 10px 0;
-  color: var(--primary-color);
+.game-card img, .bot-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  object-fit: contain; /* Ensure the image is fully visible */
 }
 
-.game-card p {
-  font-size: 0.9rem;
-  margin-bottom: 15px;
+.game-card h4, .bot-card h4 {
+  margin-top: 10px;
+  font-size: 1.2em;
 }
 
-.game-card button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
+.game-card p, .bot-card p {
+  margin-top: 10px;
+  font-size: 1em;
+}
+
+.game-card button, .bot-card button {
+  margin-top: 10px;
   padding: 10px 20px;
+  font-size: 1em;
+  border: none;
   border-radius: 5px;
-  font-size: 0.9rem;
+  background-color: #007bff;
+  color: white;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
-.game-card button:hover {
-  background-color: var(--accent-color);
+.game-card:hover, .bot-card:hover {
+  transform: scale(1.05);
 }
 
-.game-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px var(--shadow-color);
+/* Large card styles */
+.game-card.large, .bot-card.large {
+  max-width: 500px;
+}
+
+/* Small card styles */
+.game-card.small, .bot-card.small {
+  max-width: 200px;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .game-card, .bot-card {
+    max-width:100%;
+  }
 }
 
 /* ========== Progress Section ========== */

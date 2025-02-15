@@ -197,6 +197,26 @@ const PatientDashboard = () => {
                     </button>
                   </div>
                 ))}
+                <div className="bot-card small" key="therapeutic-bot">
+                  <img
+                    src="/therapeutic_bot.png" // Placeholder, replace with your actual image
+                    alt="Therapeutic Bot"
+                    className="bot-image" // Add a class for styling
+                  />
+                  <h4>Therapeutic Bot</h4>
+                  <p>
+                    Need a listening ear? Chat with our AI-powered bot for a
+                    safe space to share your thoughts.
+                  </p>
+                  <button
+                    onClick={() =>
+                      (window.location.href =
+                        "https://d5fd542386b3ad5202.gradio.live/")
+                    }
+                  >
+                    Share Your Thoughts
+                  </button>
+                </div>
               </div>
             ) : (
               <p className="no-games">No games available.</p>
