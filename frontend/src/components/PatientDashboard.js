@@ -211,7 +211,7 @@ const PatientDashboard = () => {
                   <button
                     onClick={() =>
                       (window.location.href =
-                        "https://d5fd542386b3ad5202.gradio.live/")
+                        "https://96bd02286bf4975648.gradio.live/")
                     }
                   >
                     Share Your Thoughts
