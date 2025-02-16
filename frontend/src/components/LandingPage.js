@@ -184,7 +184,7 @@ const LandingPage = () => {
           <div class="how_content">
             <span style={{ fontWeight: "bold" }}>Track Your Progress:</span>
             <br></br>
-            See how you’re doing.
+            See how you're doing.
           </div>
           <div id="circle_4" class="circle">
             4
