@@ -301,7 +301,7 @@ const PatientDashboard = () => {
       const res = await axios.get("http://localhost:5000/api/patient/games", {
         headers: { "x-auth-token": token },
       });
-      setGames(res.data.slice(0, 7)); // Show only 7 games
+      setGames(res.data.slice(0, 8)); // Show only 7 games
     } catch (error) {
       setError("Failed to load games.");
     }
