@@ -77,6 +77,13 @@ const Login = () => {
       </form>
 
       <hr />
+
+      <button
+        onClick={handleGoogleLogin}
+        style={{ backgroundColor: "#db4437", color: "white" }}
+      >
+        Login with Google
+      </button>
     </div>
   );
 };
