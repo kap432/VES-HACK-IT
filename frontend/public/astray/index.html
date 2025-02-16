@@ -4,9 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Astray Game</title>
-    <!-- Load Axios before your custom scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <!-- Other libraries -->
+    <!-- Update the script src paths to be relative -->
     <script src="Box2dWeb.min.js"></script>
     <script src="Three.js"></script>
     <script src="keyboard.js"></script>
@@ -14,74 +12,52 @@
     <script src="maze.js"></script>
 
     <script>
-        /*******************
-         * AUDIO SETUP
-         *******************/
-        // Audio files are stored in the "audio" folder.
-        var gameStartSound = new Audio("audio/game-start.mp3");
-        var levelCompleteSound = new Audio("audio/level-passed.mp3");
-        var gameOverSound = new Audio("audio/game-over.mp3");
-        var buttonClickSound = new Audio("audio/button-click.mp3");
-        var restartSound = new Audio("audio/restart.mp3");
-
-        // Global button click sound: play sound on every button click.
-        document.addEventListener("click", function (e) {
-            if (e.target.tagName.toLowerCase() === "button") {
-                buttonClickSound.play();
-            }
-        });
-
-        /*******************
-         * GAME & PHYSICS SETUP
-         *******************/
-        var camera, scene, renderer, light;
-        var mouseX, mouseY, maze, mazeMesh, mazeDimension = 11;
-        var planeMesh, ballMesh, ballRadius = 0.25, keyAxis = [0, 0];
-        var ironTexture = THREE.ImageUtils.loadTexture('ball.png'),
+        var camera = undefined,
+            scene = undefined,
+            renderer = undefined,
+            light = undefined,
+            mouseX = undefined,
+            mouseY = undefined,
+            maze = undefined,
+            mazeMesh = undefined,
+            mazeDimension = 11,
+            planeMesh = undefined,
+            ballMesh = undefined,
+            ballRadius = 0.25,
+            keyAxis = [0, 0],
+            // Update texture references to use relative paths
+            ironTexture = THREE.ImageUtils.loadTexture('ball.png'),
             planeTexture = THREE.ImageUtils.loadTexture('concrete.png'),
             brickTexture = THREE.ImageUtils.loadTexture('brick.png'),
-            gameState;
-        var b2World = Box2D.Dynamics.b2World,
+            gameState = undefined,
+
+            // Box2D shortcuts 
+            b2World = Box2D.Dynamics.b2World,
             b2FixtureDef = Box2D.Dynamics.b2FixtureDef,
             b2BodyDef = Box2D.Dynamics.b2BodyDef,
             b2Body = Box2D.Dynamics.b2Body,
             b2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
             b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
             b2Settings = Box2D.Common.b2Settings,
-            b2Vec2 = Box2D.Common.Math.b2Vec2;
-        var wWorld, wBall;
+            b2Vec2 = Box2D.Common.Math.b2Vec2,
 
-        /*******************
-         * SESSION & PROGRESS VARIABLES
-         *******************/
-        let startTime = 0;
-        let levelStartTime = 0;
-        let currentScore = 0,
-            mistakeCount = 0,
-            currentLevel = 1;
-        let sessionId = null,
-            gameStarted = false;
-        let accumulatedTime = 0,
-            accumulatedMistakes = 0;
-        let timeElapsed = 0,
-            mistakes = 0,
-            score = 0;
-        let timerInterval = null;
-        let gamePaused = false;
-        let pauseElapsed = 0;
-        let gameEnded = false;
+            // Box2D world variables 
+            wWorld = undefined,
+            wBall = undefined;
 
-        function logError(...args) {
-            console.error(...args);
-        }
+        // NEW CODE START: Global progress variables (including sessionId)
+        let startTime = Date.now();      // Start time of the game/level
+        let currentScore = 0;            // Player's score
+        let mistakeCount = 0;            // Number of mistakes (e.g., collisions)
+        let currentLevel = 1;            // Current level (starting at 1)
+        let sessionId = null;            // To store the sessionId from the backend
+        // NEW CODE END
 
-        function resetGame(level) {
-            console.log("Resetting game to level", level);
-        }
+        // =====================
+        // Arduino Serial Integration
+        // =====================
 
-        /*******************
-         * ARDUINO SERIAL INTEGRATION
-         *******************/
+        // A helper function to simulate a key event.
         function triggerArrowKey(keyName) {
             let keyCode;
             switch (keyName) {
@@ -101,6 +77,7 @@
                 bubbles: true
             });
             document.dispatchEvent(event);
+            // Optionally, dispatch a keyup event after a short delay.
             setTimeout(() => {
                 console.log(`Simulating ${keyName} key event (keyup).`);
                 const upEvent = new KeyboardEvent('keyup', {
@@ -113,23 +90,24 @@
             }, 50);
         }
 
+        // Map Arduino value to arrow keys.
         function processArduinoData(value) {
             const trimmed = value.trim();
             console.log("Received Arduino data:", trimmed);
             switch (trimmed) {
-                case '00':
+                case '0':
                     console.log('Arduino: Moving right');
                     triggerArrowKey('right');
                     break;
-                case '11':
+                case '1':
                     console.log('Arduino: Moving left');
                     triggerArrowKey('left');
                     break;
-                case '22':
+                case '2':
                     console.log('Arduino: Moving up');
                     triggerArrowKey('up');
                     break;
-                case '33':
+                case '3':
                     console.log('Arduino: Moving down');
                     triggerArrowKey('down');
                     break;
@@ -138,6 +116,7 @@
             }
         }
 
+        // Async function to connect to the serial port and continuously read Arduino data.
         async function connectSerial() {
             if (!('serial' in navigator)) {
                 console.error('Web Serial API not supported in this browser.');
@@ -172,12 +151,15 @@
             }
         }
 
-        /*******************
-         * GAME SETUP & LOOP
-         *******************/
+        // =====================
+        // Game Setup and Loop
+        // =====================
+
         function createPhysicsWorld() {
             console.log("Creating physics world.");
+            // Create the world object.
             wWorld = new b2World(new b2Vec2(0, 0), true);
+            // Create the ball.
             var bodyDef = new b2BodyDef();
             bodyDef.type = b2Body.b2_dynamicBody;
             bodyDef.position.Set(1, 1);
@@ -188,6 +170,7 @@
             fixDef.restitution = 0.25;
             fixDef.shape = new b2CircleShape(ballRadius);
             wBall.CreateFixture(fixDef);
+            // Create the maze.
             bodyDef.type = b2Body.b2_staticBody;
             fixDef.shape = new b2PolygonShape();
             fixDef.shape.SetAsBox(0.5, 0.5);
@@ -217,26 +200,33 @@
                 }
             }
             var material = new THREE.MeshPhongMaterial({ map: brickTexture });
-            return new THREE.Mesh(dummy, material);
+            var mesh = new THREE.Mesh(dummy, material);
+            return mesh;
         }
 
         function createRenderWorld() {
             console.log("Creating render world.");
+            // Create the scene object.
             scene = new THREE.Scene();
+            // Add the light.
             light = new THREE.PointLight(0xffffff, 1);
             light.position.set(1, 1, 1.3);
             scene.add(light);
+            // Add the ball.
             var g = new THREE.SphereGeometry(ballRadius, 32, 16);
             var m = new THREE.MeshPhongMaterial({ map: ironTexture });
             ballMesh = new THREE.Mesh(g, m);
             ballMesh.position.set(1, 1, ballRadius);
             scene.add(ballMesh);
+            // Add the camera.
             var aspect = window.innerWidth / window.innerHeight;
             camera = new THREE.PerspectiveCamera(60, aspect, 1, 1000);
             camera.position.set(1, 1, 5);
             scene.add(camera);
+            // Add the maze.
             mazeMesh = generate_maze_mesh(maze);
             scene.add(mazeMesh);
+            // Add the ground.
             g = new THREE.PlaneGeometry(mazeDimension * 10, mazeDimension * 10, mazeDimension, mazeDimension);
             planeTexture.wrapS = planeTexture.wrapT = THREE.RepeatWrapping;
             planeTexture.repeat.set(mazeDimension * 5, mazeDimension * 5);
@@ -248,20 +238,25 @@
         }
 
         function updatePhysicsWorld() {
+            // Apply "friction". 
             var lv = wBall.GetLinearVelocity();
             lv.Multiply(0.95);
             wBall.SetLinearVelocity(lv);
+            // Apply user-directed force.
             var f = new b2Vec2(keyAxis[0] * wBall.GetMass() * 0.25, keyAxis[1] * wBall.GetMass() * 0.25);
             wBall.ApplyImpulse(f, wBall.GetPosition());
             keyAxis = [0, 0];
+            // Take a time step.
             wWorld.Step(1 / 60, 8, 3);
         }
 
         function updateRenderWorld() {
+            // Update ball position.
             var stepX = wBall.GetPosition().x - ballMesh.position.x;
             var stepY = wBall.GetPosition().y - ballMesh.position.y;
             ballMesh.position.x += stepX;
             ballMesh.position.y += stepY;
+            // Update ball rotation.
             var tempMat = new THREE.Matrix4();
             tempMat.makeRotationAxis(new THREE.Vector3(0, 1, 0), stepX / ballRadius);
             tempMat.multiplySelf(ballMesh.matrix);
@@ -271,6 +266,7 @@
             tempMat.multiplySelf(ballMesh.matrix);
             ballMesh.matrix = tempMat;
             ballMesh.rotation.getRotationFromMatrix(ballMesh.matrix);
+            // Update camera and light positions.
             camera.position.x += (ballMesh.position.x - camera.position.x) * 0.1;
             camera.position.y += (ballMesh.position.y - camera.position.y) * 0.1;
             camera.position.z += (5 - camera.position.z) * 0.1;
@@ -279,13 +275,46 @@
             light.position.z = camera.position.z - 3.7;
         }
 
+        // NEW CODE START: sendProgress function that posts progress data to the backend
+        function sendProgress() {
+            const totalTime = Math.floor((Date.now() - startTime) / 1000) + "s";
+            // IMPORTANT: The backend now expects sessionId, score, mistakes, completed, endLevel, and totalTime.
+            const progressData = {
+                sessionId: sessionId,
+                score: currentScore,
+                mistakes: mistakeCount,
+                completed: false, // Set to true if the game is finished.
+                endLevel: currentLevel,
+                totalTime: totalTime
+            };
+            console.log("Posting progress:", progressData);
+            fetch('/api/progress', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(progressData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Progress posted:", data);
+                })
+                .catch(error => {
+                    console.error("Error posting progress:", error);
+                });
+        }
+        // NEW CODE END
+
         function gameLoop() {
-            if (gameEnded) return;
             switch (gameState) {
                 case 'initialize':
                     console.log("Game state: initialize");
                     maze = generateSquareMaze(mazeDimension);
-                    // Ensure there is an exit:
                     maze[mazeDimension - 1][mazeDimension - 2] = false;
                     createPhysicsWorld();
                     createRenderWorld();
@@ -294,10 +323,11 @@
                     light.intensity = 0;
                     var level = Math.floor((mazeDimension - 1) / 2 - 4);
                     $('#level').html('Level ' + level);
-                    levelStartTime = Date.now();
                     gameState = 'fade in';
                     break;
+
                 case 'fade in':
+                    // Gradually increase light intensity.
                     light.intensity += 0.1 * (1.0 - light.intensity);
                     renderer.render(scene, camera);
                     if (Math.abs(light.intensity - 1.0) < 0.05) {
@@ -306,27 +336,25 @@
                         console.log("Transition to game state: play");
                     }
                     break;
+
                 case 'play':
                     updatePhysicsWorld();
                     updateRenderWorld();
                     renderer.render(scene, camera);
+                    // Check for victory.
                     var mazeX = Math.floor(ballMesh.position.x + 0.5);
                     var mazeY = Math.floor(ballMesh.position.y + 0.5);
                     if (mazeX === mazeDimension && mazeY === mazeDimension - 2) {
-                        let levelTimeTaken = Math.floor((Date.now() - levelStartTime) / 1000);
-                        let scoreIncrement = Math.max(100, Math.floor((currentLevel * 1000) / (levelTimeTaken || 1)));
-                        currentScore += scoreIncrement;
-                        $("#score").text("Score: " + currentScore);
-                        console.log("Level complete! Level:", currentLevel, "Time taken:", levelTimeTaken, "s, Score Increment:", scoreIncrement, "Total Score:", currentScore);
-                        // Play level complete sound
-                        levelCompleteSound.play();
-                        var completedLevel = currentLevel;
-                        currentLevel++;
-                        updateProgress(completedLevel);
+                        currentScore += 100;  // Increase score (adjust as needed)
+                        currentLevel++;       // Increase level
+                        console.log("Level complete! Score:", currentScore, "Level:", currentLevel);
+                        // Post progress data to the backend after level completion.
+                        sendProgress();
                         mazeDimension += 2;
                         gameState = 'fade out';
                     }
                     break;
+
                 case 'fade out':
                     updatePhysicsWorld();
                     updateRenderWorld();
@@ -351,380 +379,184 @@
 
         function onMoveKey(axis) {
             keyAxis = axis.slice(0);
+            console.log("Key axis updated:", keyAxis);
         }
 
-        /*******************
-         * START SCREEN & INSTRUCTIONS TOGGLE
-         *******************/
-        const playInstructions = `How to play Astray:<br><br>
-Use the arrow keys to move the ball and find the exit to the maze.<br>
-Vim trainees: h, j, k, l`;
-        const hardwareInstructions = `Hardware Setup:<br><br>
-Connect the ECG probes to the designated hardware port.<br>
-Follow the on-screen hardware manual for proper connection.`;
-
-        function toggleInstructions() {
-            const $box = $("#instructionsBox");
-            const $btn = $("#toggleInstructions");
-            if ($box.data("mode") === "play") {
-                $box.html(hardwareInstructions);
-                $box.data("mode", "hardware");
-                $btn.text("How to play with keyboard");
-            } else {
-                $box.html(playInstructions);
-                $box.data("mode", "play");
-                $btn.text("Hardware Connection");
-            }
-        }
-
-        function startGameFromScreen() {
-            $("#startScreen").fadeOut(300);
-            handleStartGame();
-        }
-
-        /*******************
-         * SESSION & PROGRESS FUNCTIONS (Using Axios)
-         *******************/
-        const startSession = async () => {
-            try {
-                const response = await axios.post(
-                    "http://localhost:5000/api/games/start",
-                    { gameId: "astray", gameName: "Astray Game", startLevel: 1 },
-                    {
-                        headers: {
-                            "x-auth-token": localStorage.getItem("token"),
-                            "Content-Type": "application/json"
-                        }
-                    }
-                );
-                sessionId = response.data.sessionId;
-                localStorage.setItem("astraySessionId", sessionId);
-                console.log("New session started:", sessionId);
-                if (window.parent) {
-                    window.parent.postMessage({ type: 'sessionStarted', sessionId: sessionId }, "*");
-                }
-            } catch (error) {
-                if (error.response) {
-                    logError("Error response data:", error.response.data);
-                    logError("Error response status:", error.response.status);
-                    logError("Error response headers:", error.response.headers);
-                } else if (error.request) {
-                    logError("No response received:", error.request);
-                } else {
-                    logError("Error setting up request:", error.message);
-                }
-                logError("Error starting session:", error);
-            }
+        jQuery.fn.centerv = function () {
+            var wh = window.innerHeight;
+            var h = this.outerHeight();
+            this.css("position", "absolute");
+            this.css("top", Math.max(0, (wh - h) / 2) + "px");
+            return this;
         };
 
-        const updateProgress = async (completedLevel) => {
-            try {
-                const totalTime = accumulatedTime + timeElapsed;
-                const totalMistakes = accumulatedMistakes + mistakes;
-                const payload = {
-                    sessionId,
-                    gameId: "astray",
-                    score: currentScore,
-                    completed: true,
-                    mistakes: totalMistakes,
-                    endLevel: completedLevel,
-                    totalTime: `${totalTime}s`
-                };
-                console.log("Posting progress data to parent:", payload);
-                if (window.parent) {
-                    window.parent.postMessage({ type: 'progressUpdate', progress: payload }, "*");
-                }
-            } catch (error) {
-                if (error.response) {
-                    logError("Error response data:", error.response.data);
-                    logError("Error response status:", error.response.status);
-                    logError("Error response headers:", error.response.headers);
-                } else if (error.request) {
-                    logError("No response received:", error.request);
-                } else {
-                    logError("Error setting up request:", error.message);
-                }
-                logError("Error saving progress:", error);
-            }
+        jQuery.fn.centerh = function () {
+            var ww = window.innerWidth;
+            var w = this.outerWidth();
+            this.css("position", "absolute");
+            this.css("left", Math.max(0, (ww - w) / 2) + "px");
+            return this;
         };
 
-        function handleEndGame() {
-            clearInterval(timerInterval);
-            gameEnded = true;
-            // Play game over sound
-            gameOverSound.play();
-            $("#level").html("Game Over");
-            $("#score").html("Final Score: " + currentScore);
-            $("#timer").hide();
-            renderer.domElement.style.display = "none";
-            console.log("Game ended by player. Final score: " + currentScore);
-        }
-
-        const handleStartGame = () => {
-            console.log("Start Game button clicked.");
-            if (!sessionId) {
-                startSession();
-            }
-            if (!gameStarted) {
-                // Play game start sound
-                gameStartSound.play();
-                startTime = Date.now();
-                levelStartTime = Date.now();
-                requestAnimationFrame(gameLoop);
-                timerInterval = setInterval(function () {
-                    var elapsed = Math.floor((Date.now() - startTime) / 1000);
-                    timeElapsed = elapsed;
-                    $("#timer").text("Time: " + elapsed + " s");
-                }, 1000);
-                gameStarted = true;
-                gamePaused = false;
-                $("#pauseGame").text("Pause Game");
-                $("#startGame").hide();
-            }
-        };
-
-        const handlePauseGame = () => {
-            if (!gamePaused) {
-                gamePaused = true;
-                clearInterval(timerInterval);
-                pauseElapsed = Math.floor((Date.now() - startTime) / 1000);
-                $("#pauseGame").text("Resume Game");
-                console.log("Game paused at " + pauseElapsed + " s");
-            } else {
-                gamePaused = false;
-                startTime = Date.now() - pauseElapsed * 1000;
-                timerInterval = setInterval(function () {
-                    var elapsed = Math.floor((Date.now() - startTime) / 1000);
-                    timeElapsed = elapsed;
-                    $("#timer").text("Time: " + elapsed + " s");
-                }, 1000);
-                $("#pauseGame").text("Pause Game");
-                console.log("Game resumed.");
-            }
-        };
-
-        const handleRestartGame = () => {
-            console.log("Restart Game button clicked. Playing restart sound and reloading page...");
-            // Play restart sound and wait 1 second before reloading.
-            restartSound.play().then(() => {
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            }).catch((error) => {
-                console.log("Error playing restart sound:", error);
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            });
+        jQuery.fn.center = function () {
+            this.centerv();
+            this.centerh();
+            return this;
         };
 
         $(document).ready(function () {
-            $("#startScreen").show();
-            $("#instructionsBox").html(playInstructions).data("mode", "play");
+            // NEW CODE START: Start a new game session by calling /api/start
+            fetch('/api/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    gameId: 'astray',
+                    gameName: 'Astray',
+                    startLevel: 1
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    sessionId = data.sessionId;
+                    console.log("Session started:", sessionId);
+                })
+                .catch(error => {
+                    console.error("Error starting session:", error);
+                });
+            // NEW CODE END
+
+            // NEW CODE START: Set up timer display updating every second.
+            setInterval(function () {
+                var elapsed = Math.floor((Date.now() - startTime) / 1000);
+                $('#timer').html('Time: ' + elapsed + ' s');
+            }, 1000);
+            // NEW CODE END
+
+            // Prepare the instructions.
+            $('#instructions').center();
+            $('#instructions').hide();
+            KeyboardJS.bind.key('i', function () {
+                $('#instructions').show();
+                console.log("Instructions shown.");
+            }, function () {
+                $('#instructions').hide();
+                console.log("Instructions hidden.");
+            });
+
+            // Create the renderer.
             renderer = new THREE.WebGLRenderer();
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
+
+            // Bind keyboard and resize events.
             KeyboardJS.bind.axis('left', 'right', 'down', 'up', onMoveKey);
             KeyboardJS.bind.axis('h', 'l', 'j', 'k', onMoveKey);
             $(window).resize(onResize);
+
+            // Set the initial game state.
             gameState = 'initialize';
+
+            // Start the game loop.
+            requestAnimationFrame(gameLoop);
         });
     </script>
 
     <style>
-        html,
         body {
-            overflow-x: hidden;
+            background: black;
             margin: 0;
             padding: 0;
             font-family: 'Helvetica';
-            background: #000;
+            width:100vw;
         }
 
-        /* Start screen overlay */
-        #startScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        /* Centered instructions box in overlay */
-        #instructionsBox {
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #fff;
+        #instructions {
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
             text-align: center;
-            padding: 20px;
-            border: 2px solid #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            max-width: 80%;
-            margin-bottom: 20px;
-            font-size: 18px;
-            line-height: 1.4;
+            padding: 32px;
+            margin: 0px;
+            display: inline;
+            border: 2px solid white;
         }
 
-        /* Buttons in the overlay */
-        #startScreen button {
-            background: linear-gradient(45deg, #4CAF50, #2E7D32);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            margin: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s, background 0.2s;
-        }
-
-        #startScreen button:hover {
-            background: linear-gradient(45deg, #66BB6A, #388E3C);
-            transform: translateY(-2px);
-        }
-
-        #startScreen button:active {
-            transform: translateY(0);
-        }
-
-        /* Info displays */
-        #level,
-        #score,
-        #timer {
+        #help {
             position: absolute;
-            top: 20px;
-            padding: 8px 12px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            border-radius: 8px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            left: 0px;
+            bottom: 0px;
+            padding: 4px;
+            color: white;
         }
 
         #level {
-            left: 20px;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            padding: 4px;
+            color: yellow;
+            font-weight: bold;
         }
 
-        #score {
-            left: 200px;
-        }
-
+        /* NEW CODE: Styling for timer display */
         #timer {
-            right: 20px;
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            padding: 4px;
+            color: lime;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.5);
         }
 
-        /* Modern button styling for game control buttons */
-        button {
-            background: linear-gradient(45deg, #4CAF50, #2E7D32);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            margin: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s, background 0.2s;
-        }
+        /* NEW CODE END */
 
-        button:hover {
-            background: linear-gradient(45deg, #66BB6A, #388E3C);
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        /* Specific positioning for game control buttons */
+        /* NEW CODE: Styling for the Arduino connect button */
         #arduinoConnect {
             position: absolute;
-            right: 20px;
-            bottom: 20px;
+            right: 0px;
+            bottom: 0px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
         }
 
-        #startGame,
-        #pauseGame,
-        #restartGame,
-        #endGame {
-            position: absolute;
-            left: 20px;
-        }
-
-        #startGame {
-            top: 20px;
-        }
-
-        #pauseGame {
-            top: 80px;
-        }
-
-        #restartGame {
-            top: 140px;
-        }
-
-        #endGame {
-            top: 200px;
-        }
-
-        /* Help text styling */
-        #help {
-            position: absolute;
-            left: 20px;
-            bottom: 20px;
-            padding: 8px 12px;
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            border-radius: 6px;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
+        /* NEW CODE END */
     </style>
 </head>
 
 <body>
-    <!-- Start screen overlay -->
-    <div id="startScreen">
-        <div id="instructionsBox"></div>
-        <div>
-            <button id="toggleInstructions" onclick="toggleInstructions()">Hardware Connection</button>
-            <button id="beginGame" onclick="startGameFromScreen()">Start Game</button>
-        </div>
+    <div id='instructions'>
+        How to play Astray:
+        <br><br>
+        Use the arrow keys to move the ball and find the exit to the maze.
+        <br><br>
+        Vim trainees: h, j, k, l
     </div>
-
-    <div id="help">Hold down the 'I' key for instructions.</div>
-    <div id="level">Level 1</div>
-    <div id="score">Score: 0</div>
+    <div id='help'>
+        Hold down the 'I' key for instructions.
+    </div>
+    <div id='level'>
+        Level 1
+    </div>
+    <!-- NEW CODE: Timer display -->
     <div id="timer">Time: 0 s</div>
+    <!-- NEW CODE: Arduino connection button -->
     <button id="arduinoConnect">Connect Arduino</button>
-    <button id="startGame">Start Game</button>
-    <button id="pauseGame">Pause Game</button>
-    <button id="restartGame">Restart Game</button>
-    <button id="endGame">End Game</button>
 
     <script>
+        // Attach event listener to the Arduino connection button.
         document.getElementById('arduinoConnect').addEventListener('click', function () {
             console.log("Arduino connect button clicked.");
             connectSerial();
-        });
-        document.getElementById('startGame').addEventListener('click', function () {
-            handleStartGame();
-        });
-        document.getElementById('pauseGame').addEventListener('click', function () {
-            handlePauseGame();
-        });
-        document.getElementById('restartGame').addEventListener('click', function () {
-            handleRestartGame();
-        });
-        document.getElementById('endGame').addEventListener('click', function () {
-            handleEndGame();
         });
     </script>
 </body>

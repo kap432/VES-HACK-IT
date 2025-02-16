@@ -44,7 +44,13 @@ const games = [
     title: "Story Game", 
     description: "Choose a story from each level and solve puzzles to complete the narrative.", 
     image: "/story-game-logo.png",
-  }
+  },
+   {
+    id: 8, // Updated id for Memory Match game
+    title: "Family Match",
+    description: "Match similar cards in the shortest time.",
+    image: "/family-match-logo.png", // Ensure this path is correct
+  },
 ];
 
 // GET Available Games

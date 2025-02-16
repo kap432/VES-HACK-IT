@@ -10,6 +10,7 @@ import MemoryMatch from "./components/games/MemoryMatch";
 import MathQuiz from "./components/games/MathQuiz";
 import WordScramble from "./components/games/WordScramble";
 import FamilyTreeGame from "./components/games/FamilyTreeGame";
+import FamilyMatch from "./components/games/FamilyMatch"; // <-- Imported FamilyMatch here
 import PatientGames from "./components/PatientGames";
 import GuardianDashboard from "./components/GuardianDashboard";
 import Task from "./pages/Task";
@@ -19,7 +20,7 @@ import Profile from "./pages/Profile";
 import Chatroom from "./components/chatroom";
 import EDiary from "./pages/Ediary";
 import Stories from "./pages/Stories";
-import StoryGame from "./components/games/StoryGame"; // Our Story Game component
+import StoryGame from "./components/games/StoryGame"; // Our Story Game component
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/games/3" element={<WordScramble />} />
         <Route path="/guardian-dashboard" element={<GuardianDashboard />} />
         <Route path="/games/4" element={<FamilyTreeGame />} />
+        <Route path="/games/8" element={<FamilyMatch />} />  {/* New route for FamilyMatch */}
         <Route path="/patient-games/:patientId" element={<PatientGames />} />
         <Route path="/tasks" element={<Task />} />
         {/* Route for Astray Game */}

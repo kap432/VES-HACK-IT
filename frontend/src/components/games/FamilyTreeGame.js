@@ -326,7 +326,6 @@ const FamilyTreeGame = () => {
         <div className="top-left">
           <button className="exit-btn" onClick={handleExitGame}>Exit</button>
           <button className="undo-btn" onClick={handleUndo} disabled={history.length === 0 || tree.every((slot) => slot.placed)}>Undo</button>
-          {/* RESTART BUTTON ADDED */}
           <button className="restart-btn" onClick={handleRestartGame}>Restart</button>
         </div>
         <div className="top-right">
@@ -335,21 +334,21 @@ const FamilyTreeGame = () => {
               "Drag the card to its correct position. Earn points, undo mistakes, and complete the family tree. When you win, click 'Next Level' to advance. Click 'Start Game' when you're ready. Use 'Restart' to begin a new session."
             )
           }>Help</button>
-         <div className="timer">
-  <img src="/timer.png" alt="Timer Icon" className="timer-icon" />
-  <span>{timeElapsed < 10 ? `0${timeElapsed}` : timeElapsed} s</span>
-</div>
-
+          <div className="timer">
+            <img src="/timer.png" alt="Timer Icon" className="timer-icon" />
+            <span>{timeElapsed < 10 ? `0${timeElapsed}` : timeElapsed} s</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Tree Area */}
+      {/* Header */}
       <motion.div id="header" variants={headerVariants} initial="hidden" animate="visible" className="header-center">
         <span className="level-title">Family Tree Game - Level {currentLevel}</span>
         <span className="score">Score: {score}</span>
         <span className="mistakes">Mistakes: {accumulatedMistakes + mistakes}</span>
       </motion.div>
 
+      {/* Family Tree Area */}
       <div className="family-tree">
         {levelsOrder.map((level, index) => (
           <React.Fragment key={level}>
@@ -366,8 +365,18 @@ const FamilyTreeGame = () => {
                 >
                   {slot.placed && (
                     <motion.div className="card placed" variants={nodeVariants} animate="placed" transition={{ duration: 0.3 }}>
-                      <strong>{slot.records ? slot.records.map((r) => r.name).join(", ") : slot.name}</strong>
-                      <p className="relation">{slot.relation}</p>
+                      {slot.imageUrl ? (
+                        <img
+                          src={`http://localhost:5000/uploads/family/${slot.imageUrl}`}
+                          alt={slot.relation}
+                          className="family-image"
+                        />
+                      ) : (
+                        <strong>
+                          {slot.records ? slot.records.map((r) => r.name).join(", ") : slot.name}
+                        </strong>
+                      )}
+                      {/* <p className="relation">{slot.relation}</p> */}
                     </motion.div>
                   )}
                 </motion.div>
@@ -378,8 +387,18 @@ const FamilyTreeGame = () => {
         ))}
       </div>
 
-      {/* Draggable Card */}
-      <AnimatePresence>
+      
+
+      {/* Side Bar with Control Buttons */}
+      <div className="side-bar">
+        {!gameStarted && !tree.every((slot) => slot.placed) && (
+          <button className="start-btn" onClick={handleStartGame}>Start Game</button>
+        )}
+        {gameCompleted && currentLevel < MAX_LEVEL && (
+          <button className="next-level-btn" onClick={handleNextLevel}>Next Level</button>
+        )}
+        <div className="time-display">Time: {timeElapsed}s</div>
+        <AnimatePresence>
         {gameStarted && currentCard && !currentCard.placed && (
           <motion.div
             className="drag-card"
@@ -392,21 +411,21 @@ const FamilyTreeGame = () => {
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ duration: 0.5, repeat: Infinity }}
           >
-            <strong>{currentCard.name}</strong>
-            <p className="relation">{currentCard.relation}</p>
+            {currentCard.imageUrl ? (
+              <img
+                src={`http://localhost:5000/uploads/family/${currentCard.imageUrl}`}
+                alt={currentCard.relation}
+                className="family-image"
+              />
+            ) : (
+              <>
+                <strong>{currentCard.name}</strong>
+                {/* <p className="relation">{currentCard.relation}</p> */}
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Bottom Bar */}
-      <div className="bottom-bar">
-        {!gameStarted && !tree.every((slot) => slot.placed) && (
-          <button className="start-btn" onClick={handleStartGame}>Start Game</button>
-        )}
-        {gameCompleted && currentLevel < MAX_LEVEL && (
-          <button className="next-level-btn" onClick={handleNextLevel}>Next Level</button>
-        )}
-        <div className="time-display">Time: {timeElapsed}s</div>
       </div>
 
       {/* Win Message */}

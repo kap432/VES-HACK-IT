@@ -150,7 +150,7 @@ const StoryGame = () => {
       console.warn('Scene not found at index:', index);
       return;
     }
-    // Ensure the story container is visible (no dynamic border added)
+    // Ensure the story container is visible
     if (storyContainerRef.current) {
       storyContainerRef.current.style.display = "block";
       storyContainerRef.current.style.opacity = "1";
@@ -167,7 +167,15 @@ const StoryGame = () => {
     })
       .add(() => {
         if (textAreaRef.current) textAreaRef.current.innerText = scene.text;
-        if (imageAreaRef.current) imageAreaRef.current.innerHTML = scene.image;
+        if (imageAreaRef.current) {
+          // If the scene.image is an inline SVG, insert it directly.
+          // Otherwise, assume it is a path and create an <img> tag.
+          if (scene.image.trim().startsWith("<svg")) {
+            imageAreaRef.current.innerHTML = scene.image;
+          } else {
+            imageAreaRef.current.innerHTML = `<img src="${process.env.PUBLIC_URL}${scene.image}" alt="${scene.caption}" />`;
+          }
+        }
       })
       .to([textAreaRef.current, imageAreaRef.current, lottieContainerRef.current], {
         duration: 0.5,
@@ -477,11 +485,10 @@ const StoryGame = () => {
       <div id="story-container" ref={storyContainerRef} style={{ display: 'none' }}>
         <div id="text-area" ref={textAreaRef}></div>
         <div id="image-area" ref={imageAreaRef}></div>
-        <div id="lottie-container" ref={lottieContainerRef}></div>
-        <div className="btn-group">
-          <button onClick={handleBackScene}>Back Scene</button>
-          <button onClick={handleNextScene}>Next Scene</button>
-          <button onClick={handleToggleVoice}>Toggle Voice</button>
+        <div className="btn-group-story">
+          <button id="back-story" onClick={handleBackScene}>Back Scene</button>
+          <button id="next-story" onClick={handleNextScene}>Next Scene</button>
+          <button id="toggle-voice" onClick={handleToggleVoice}>Toggle Voice</button>
         </div>
         <div id="progress">
           Scene {currentScene + 1} of {storyData.length}
