@@ -28,6 +28,7 @@
   background-color: white;
   background-size: cover;
   background-position: center -50%;
+  background-image: no-repeat;
   /* Adjust this value to move it down */
 }
 

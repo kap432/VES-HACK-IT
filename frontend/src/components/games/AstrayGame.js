@@ -7,7 +7,7 @@ const AstrayGame = () => {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      // Optionally check event.origin for security.
+      // Optionally check event.origin for security (e.g., event.origin === "http://localhost:3000").
       if (event.data) {
         if (event.data.type === "sessionStarted") {
           console.log("Session started from game:", event.data.sessionId);
@@ -37,16 +37,29 @@ const AstrayGame = () => {
   }, []);
 
   return (
-    <div style={{ width: "100%", height: "100vh", overflow: "hidden" }}>
+    // Container that forces full viewport usage
+    <div
+      style={{
+        margin: 0,
+        padding: 0,
+        width: "100vw",
+        height: "100vh",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <iframe
         ref={iframeRef}
-        src="/astray/index.html" // Adjust if necessary.
+        src="/astray/index.html"
         title="Astray Game"
         style={{
+          flex: "1 1 auto",    // Let the iframe grow/shrink to fill space
           width: "100%",
-          height: "100%",
           border: "none",
-          filter: "brightness(1.2)"
+          display: "block",    // Removes default iframe inline-block spacing
+          // Optional: "filter" can be added here if you still want brightness
+          // filter: "brightness(1.2)"
         }}
       ></iframe>
     </div>

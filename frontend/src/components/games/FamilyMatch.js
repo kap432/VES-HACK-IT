@@ -25,7 +25,7 @@ const FamilyMatchGame = () => {
   const [countdown, setCountdown] = useState(5);
   const countdownIntervalRef = useRef(null);
 
-  // Fetch family data (each member should have at least a "name" property)
+  // Fetch family data
   const fetchFamilyData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -48,8 +48,6 @@ const FamilyMatchGame = () => {
         headers: { "x-auth-token": token },
       });
       const data = Array.isArray(response.data) ? response.data : [response.data];
-      // Process each member so that if imageUrl is provided, it fetches the image from the backend;
-      // otherwise, it uses a placeholder image.
       const processedData = data.map((member) => ({
         ...member,
         photo: member.imageUrl
@@ -57,7 +55,6 @@ const FamilyMatchGame = () => {
           : "https://via.placeholder.com/150"
       }));
       setFamilyData(processedData);
-      // Note: We wait for the user to click "Start Game" before starting.
     } catch (error) {
       console.error("Error fetching family data:", error);
     }
@@ -67,8 +64,7 @@ const FamilyMatchGame = () => {
     fetchFamilyData();
   }, []);
 
-  // Generate a candidate pool of 5 names for the current round.
-  // The pool includes the target's name and 4 randomly chosen distractors.
+  // Generate candidate pool with target's name and four distractors.
   const generateCandidatePool = (targetMember, data) => {
     let pool = [targetMember];
     const others = data.filter((member) => member.name !== targetMember.name);
@@ -80,13 +76,11 @@ const FamilyMatchGame = () => {
     setCountdown(5); // reset countdown for the new candidate pool
   };
 
-  // Countdown timer that ticks every second.
-  // When the countdown reaches 0, it toggles the candidate and resets the countdown.
+  // Countdown timer effect
   useEffect(() => {
     if (!gameStarted) return; // only run during the game
     if (candidates.length === 0 || gameOver) return;
 
-    // Clear any existing timer before starting a new one.
     if (countdownIntervalRef.current) {
       clearInterval(countdownIntervalRef.current);
     }
@@ -104,7 +98,38 @@ const FamilyMatchGame = () => {
     return () => clearInterval(countdownIntervalRef.current);
   }, [candidates, gameOver, gameStarted]);
 
-  // Start the game when the user clicks "Start Game" (or via key press)
+  // Use SpeechSynthesis to speak the candidate's name when it changes.
+  useEffect(() => {
+    if (candidates.length > 0 && candidates[candidateIndex]) {
+      // Cancel any ongoing speech before speaking the new candidate
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(candidates[candidateIndex].name);
+
+      // Set language to Indian English; change to 'hi-IN' if Hindi is preferred.
+      utterance.lang = "en-IN";
+
+      const setIndianVoice = () => {
+        const voices = window.speechSynthesis.getVoices();
+        // Look for a voice with en-IN or hi-IN language code.
+        const indianVoice =
+          voices.find((voice) => voice.lang === "en-IN") ||
+          voices.find((voice) => voice.lang === "hi-IN");
+        if (indianVoice) {
+          utterance.voice = indianVoice;
+        }
+        window.speechSynthesis.speak(utterance);
+      };
+
+      // In some browsers, voices may not be immediately available.
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.addEventListener("voiceschanged", setIndianVoice);
+      } else {
+        setIndianVoice();
+      }
+    }
+  }, [candidateIndex, candidates]);
+
+  // Start game when the user clicks "Start Game"
   const handleStartGame = () => {
     if (familyData.length > 0) {
       setTargetIndex(0);
@@ -134,11 +159,7 @@ const FamilyMatchGame = () => {
     moveToNextRound();
   };
 
-  // Global keyboard events:
-  // - Before the game starts: pressing Right Arrow or Enter starts the game.
-  // - During the game:
-  //    • If no answer has been given, pressing Right Arrow checks the candidate.
-  //    • If an answer is shown, pressing Right Arrow or Enter moves to the next round.
+  // Global keyboard events
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!gameStarted) {
@@ -169,7 +190,6 @@ const FamilyMatchGame = () => {
           console.log("Wrong!");
           setAnswerResult("Wrong!");
         }
-        // Stop the countdown timer so candidates don't continue toggling.
         clearInterval(countdownIntervalRef.current);
       }
     };
@@ -206,7 +226,6 @@ const FamilyMatchGame = () => {
             lines.forEach((line) => {
               const trimmed = line.trim();
               console.log("Received from COM port (string):", trimmed);
-              // If the trimmed message is "0", simulate a Right Arrow key press.
               if (trimmed === "0") {
                 window.dispatchEvent(
                   new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true })
@@ -223,7 +242,6 @@ const FamilyMatchGame = () => {
   };
 
   // Calculate the degree of progress for the loader border.
-  // When countdown = 5, progress = 0deg; when countdown = 0, progress = 360deg.
   const progressDeg = ((5 - countdown) / 5) * 360;
 
   // --- Pre-game Preview Screen ---
