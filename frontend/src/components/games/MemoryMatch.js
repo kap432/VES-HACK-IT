@@ -24,12 +24,15 @@ const MemoryMatch = () => {
   const [gameOver, setGameOver] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [mistakes, setMistakes] = useState(0);
-  const [startLevel] = useState(1); // Default start level
+  const [startLevel] = useState(1);
   const [endLevel, setEndLevel] = useState(1);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const [showPreview, setShowPreview] = useState(true);
   const timerRef = useRef(null);
   const hasStartedSession = useRef(false);
-
+  
   const token = localStorage.getItem("token");
 
   const startNewSession = useCallback(async () => {
@@ -42,15 +45,12 @@ const MemoryMatch = () => {
             "x-auth-token": token,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
       setSessionId(response.data.sessionId);
       console.log("New session started:", response.data.sessionId);
     } catch (error) {
-      console.error(
-        "Error starting session:",
-        error.response?.data || error.message,
-      );
+      console.error("Error starting session:", error.response?.data || error.message);
     }
   }, [token, startLevel]);
 
@@ -59,19 +59,40 @@ const MemoryMatch = () => {
     setMistakes(0);
     setTimeElapsed(0);
     setEndLevel(startLevel);
+    setShowPreview(true);
+    setGameStarted(false);
 
     if (!sessionId && !hasStartedSession.current) {
       hasStartedSession.current = true;
       startNewSession();
     }
 
-    // Start the game timer
-    timerRef.current = setInterval(() => {
-      setTimeElapsed((prev) => prev + 1);
+    // Countdown Timer (5 to 0)
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          clearInterval(countdownInterval);
+          setShowPreview(false);
+          setGameStarted(true);
+        }
+        return prev - 1;
+      });
     }, 1000);
 
-    return () => clearInterval(timerRef.current); // Cleanup timer on unmount
+    return () => clearInterval(countdownInterval);
   }, [startNewSession, sessionId, startLevel]);
+
+  useEffect(() => {
+    if (gameStarted) {
+      timerRef.current = setInterval(() => {
+        setTimeElapsed((prev) => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+
+    return () => clearInterval(timerRef.current);
+  }, [gameStarted]);
 
   useEffect(() => {
     if (flippedCards.length === 2) {
@@ -95,7 +116,7 @@ const MemoryMatch = () => {
       completed: true,
       mistakes,
       endLevel,
-      totalTime: `${timeElapsed}s`, // Send total time in seconds
+      totalTime: `${timeElapsed}s`,
     };
 
     console.log("Sending progress data:", payload);
@@ -109,28 +130,26 @@ const MemoryMatch = () => {
             "x-auth-token": token,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
       console.log("Progress saved successfully:", response.data);
     } catch (error) {
-      console.error(
-        "Error saving progress:",
-        error.response?.data || error.message,
-      );
+      console.error("Error saving progress:", error.response?.data || error.message);
     }
   }, [matchedCards, sessionId, token, mistakes, endLevel, timeElapsed]);
 
   useEffect(() => {
     if (matchedCards.length === cardImages.length && !gameOver) {
       setGameOver(true);
-      clearInterval(timerRef.current); // Stop timer
-      setEndLevel((prev) => prev + 1); // Increment level
+      clearInterval(timerRef.current);
+      setEndLevel((prev) => prev + 1);
       sendProgressToBackend();
     }
   }, [matchedCards, sendProgressToBackend, gameOver]);
 
   const handleCardClick = (card) => {
     if (
+      gameStarted &&
       flippedCards.length < 2 &&
       !flippedCards.includes(card) &&
       !matchedCards.includes(card.name)
@@ -147,35 +166,56 @@ const MemoryMatch = () => {
     setMistakes(0);
     setSessionId(null);
     setTimeElapsed(0);
+    setCountdown(5);
+    setShowPreview(true);
+    setGameStarted(false);
     hasStartedSession.current = false;
     startNewSession();
+
+    // Restart countdown
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          clearInterval(countdownInterval);
+          setShowPreview(false);
+          setGameStarted(true);
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   return (
-    <div className="memory-container">
+    <div className="mm-memory-container">
       <h2>Memory Match Game</h2>
-      <p>⏳ Time: {timeElapsed}s</p>
-      <p>❌ Mistakes: {mistakes}</p>
-      <p>🏆 Level: {endLevel}</p>
+      <p id="time-memory">⏳ Time: {timeElapsed}s</p>
+      <p id="mistake-memory">❌ Mistakes: {mistakes}</p>
+      <p id="level-memory">🏆 Level: {endLevel}</p>
+
+      {showPreview && <h1 className="countdown">{countdown > 0 ? countdown : "START!"}</h1>}
 
       {gameOver ? (
         <>
-          <h3 className="game-over">🎉 You won! Play again?</h3>
+          <h3 className="mm-game-over">🎉 You won! Play again?</h3>
           <p>⏳ Total Time: {timeElapsed}s</p>
           <p>❌ Total Mistakes: {mistakes}</p>
-          <button className="restart-btn" onClick={restartGame}>
+          <button className="mm-restart-btn" onClick={restartGame}>
             Restart Game 🔄
           </button>
         </>
       ) : (
-        <div className="card-grid">
+        <div className="mm-card-grid">
           {cards.map((card) => (
             <div
               key={card.id}
-              className={`card ${flippedCards.includes(card) || matchedCards.includes(card.name) ? "flipped" : ""}`}
+              className={`mm-card ${
+                showPreview || flippedCards.includes(card) || matchedCards.includes(card.name)
+                  ? "mm-flipped"
+                  : ""
+              }`}
               onClick={() => handleCardClick(card)}
             >
-              {flippedCards.includes(card) || matchedCards.includes(card.name)
+              {showPreview || flippedCards.includes(card) || matchedCards.includes(card.name)
                 ? card.name
                 : "❓"}
             </div>

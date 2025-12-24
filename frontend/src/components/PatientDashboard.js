@@ -33,6 +33,7 @@ const PatientDashboard = () => {
     };
   }, []);
 
+  // Fetch user details from the details endpoint (which includes profilePic)
   const fetchUserData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -41,14 +42,15 @@ const PatientDashboard = () => {
         navigate("/login");
         return;
       }
-      const res = await axios.get("http://localhost:5000/api/auth/user", {
+      // NOTE: Changed endpoint from /api/auth/user to /api/detail
+      const res = await axios.get("http://localhost:5000/api/detail", {
         headers: { "x-auth-token": token },
       });
-      console.log("User data fetched:", res.data);
+      console.log("User details fetched:", res.data);
       setUser(res.data);
     } catch (error) {
-      console.error("Failed to load user data:", error);
-      setError("Failed to load user data.");
+      console.error("Failed to load user details:", error);
+      setError("Failed to load user details.");
     }
   };
 
@@ -100,6 +102,11 @@ const PatientDashboard = () => {
     navigate("/login");
   };
 
+   // Navigate to the Stories page
+   const handleLookUpStories = () => {
+    navigate("/pages/stories");
+  };
+
   return (
     <>
       {/* Navbar */}
@@ -112,30 +119,53 @@ const PatientDashboard = () => {
           <Link to="/games">Games</Link>
           <Link to="/pages/profile">Profile</Link>
           <Link to="/tasks">Tasks</Link>
+          <Link to="/pages/Ediary">e-Diary</Link>
         </div>
         <div className="profile-dropdown" ref={dropdownRef}>
-          <img
-            src={user?.profilePic || "/profile-icon.png"}
-            alt="Profile"
-            className="profile-pic"
-            onClick={toggleDropdown}
-          />
+          {user?.profilePic ? (
+            <img
+              src={`http://localhost:5000/${user.profilePic.replace(/\\/g, "/")}`}
+              alt="Profile"
+              className="profile-pic"
+              onClick={toggleDropdown}
+            />
+          ) : (
+            <img
+              src="/default-profile.png"
+              alt="Default Profile"
+              className="profile-pic"
+              onClick={toggleDropdown}
+            />
+          )}
           {isDropdownOpen && (
             <div className="dropdown-menu">
               <div className="dropdown-header">
-                <img
-                  src={user?.profilePic || "/profile-icon.png"}
-                  alt="Profile"
-                  className="dropdown-profile-pic"
-                />
+                {user?.profilePic ? (
+                  <img
+                    src={`http://localhost:5000/${user.profilePic.replace(/\\/g, "/")}`}
+                    alt="Profile"
+                    className="dropdown-profile-pic"
+                  />
+                ) : (
+                  <img
+                    src="/default-profile.png"
+                    alt="Default Profile"
+                    className="dropdown-profile-pic"
+                  />
+                )}
                 <div className="dropdown-user-info">
                   <p className="dropdown-name">{user?.name || "User Name"}</p>
-                  <p className="dropdown-email">{user?.email || "user@example.com"}</p>
+                  <p className="dropdown-email">
+                    {user?.email || "user@example.com"}
+                  </p>
                 </div>
               </div>
               <div className="dropdown-divider" />
               <Link to="/pages/profile" className="dropdown-item">
                 Profile
+              </Link>
+              <Link to="/leaderboard" className="dropdown-item">
+              Leaderboard
               </Link>
               <Link to="/settings" className="dropdown-item">
                 Settings
@@ -154,7 +184,7 @@ const PatientDashboard = () => {
         <main className="main-content">
           {error && <p className="error">{error}</p>}
           <section className="game-section">
-            <h2>Available Games</h2>
+            <h2>Play & Enjoy</h2>
             {games.length > 0 ? (
               <div className="game-grid">
                 {games.map((game) => (
@@ -170,12 +200,38 @@ const PatientDashboard = () => {
                     </button>
                   </div>
                 ))}
+                <div className="bot-card small" key="therapeutic-bot">
+                  <img
+                    src="/therapeutic_bot.png" // Placeholder, replace with your actual image
+                    alt="Therapeutic Bot"
+                    className="bot-image" // Add a class for styling
+                  />
+                  <h4>Therapeutic Bot</h4>
+                  <p>
+                    Need a listening ear? Chat with our AI-powered bot for a
+                    safe space to share your thoughts.
+                  </p>
+                  <button
+                    onClick={() =>
+                      (window.location.href =
+                        "https://96bd02286bf4975648.gradio.live/")
+                    }
+                  >
+                    Share Your Thoughts
+                  </button>
+                </div>
               </div>
             ) : (
               <p className="no-games">No games available.</p>
             )}
           </section>
-
+          <div className="chatroom-card">
+            <h2>Join the Chatroom</h2>
+            <p>Connect with others and discuss freely.</p>
+            <button onClick={() => navigate("/chatroom")}>
+              Enter Chatroom
+            </button>
+          </div>
           <section className="progress-section">
             <h2>Your Progress</h2>
             {progressData.length > 0 ? (
@@ -183,6 +239,11 @@ const PatientDashboard = () => {
             ) : (
               <p>No progress recorded yet.</p>
             )}
+          </section>
+          <section className="stories-section">
+            <button onClick={handleLookUpStories} className="stories-btn">
+              Look Up to Your Stories
+            </button>
           </section>
         </main>
       </div>

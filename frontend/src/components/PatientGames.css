@@ -1,22 +1,21 @@
-/* Universal Box-Sizing */
+/* ========== Universal Styles ========== */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* Reset Body Margins/Padding */
+/* ========== Body Reset ========== */
 body {
   font-family: "Poppins", sans-serif;
   background-color: var(--secondary-color);
   margin: 0;
   padding: 0;
   color: var(--text-color);
-  overflow-x: hidden;
-  /* Prevent horizontal scroll */
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
-/* ========== Root Variables for Theme ========== */
+/* ========== Root Variables ========== */
 :root {
   --primary-color: #4a90e2;
   --secondary-color: #f4f4f4;
@@ -26,7 +25,7 @@ body {
   --shadow-color: rgba(0, 0, 0, 0.1);
 }
 
-/* ========== Navbar ========== */
+/* ========== Navbar Styles ========== */
 .navbar {
   background-color: var(--primary-color);
   padding: 15px 30px;
@@ -37,7 +36,6 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  
   width: 100vw;
 }
 
@@ -61,7 +59,9 @@ body {
   text-decoration: none;
   font-weight: 500;
   font-size: 1rem;
-  transition: color 0.3s ease, transform 0.3s ease;
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
 }
 
 .navbar .menu a:hover {
@@ -69,6 +69,7 @@ body {
   transform: translateY(-2px);
 }
 
+/* ========== Profile Dropdown ========== */
 .profile-dropdown {
   position: relative;
   margin-left: 20px;
@@ -151,81 +152,116 @@ body {
   align-items: center;
 }
 
-/* ========== Main Content ========== */
+/* ========== Main Content Styles ========== */
 .main-content {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 30px;
   margin: 0 auto;
-  /* background-color: #ffdd57; */
 }
 
-/* ========== Game Section ========== */
-.game-section {
-  width: 100%;
+/* ========== Patient Games Section ========== */
+.patient-games-container {
+  font-family: Arial, sans-serif;
+  padding: 20px;
   max-width: 1200px;
-  margin: 0 auto;
-  animation: fadeIn 0.6s ease-in-out;
-}
-
-.game-section h2 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  /* color: var(--primary-color); */
-}
-
-/* ========== Game Grid and Cards ========== */
-.game-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  /* background-color: bisque; */
-  padding: 10px;
-  /* border-radius: 8px; */
-}
-
-.game-card {
-  background: var(--secondary-color);
-  padding: 15px;
+  margin: auto;
+  background-color: #f5f5f5;
   border-radius: 10px;
-  box-shadow: 0 3px 6px var(--shadow-color);
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
 }
 
-.game-card img {
-  width: 100%;
-  height: 150px;
-  border-radius: 8px;
-  object-fit: cover;
+/* ========== Dashboard Header ========== */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+  color: var(--primary-color);
   margin-bottom: 10px;
 }
 
-.game-card h4 {
-  font-size: 1.1rem;
-  margin: 10px 0;
+.dashboard-header h2 {
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+/* ========== Progress Summary Section ========== */
+.progress-summary {
+  background: var(--secondary-color);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  box-shadow: 0 3px 6px var(--shadow-color);
+  text-align: center;
+}
+
+.progress-summary h2 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
   color: var(--primary-color);
 }
 
-.game-card p {
-  font-size: 0.9rem;
-  margin-bottom: 15px;
+.summary-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
 }
 
-.game-card button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.summary-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  width: 200px;
 }
 
-.game-card button:hover {
-  background-color: var(--accent-color);
+.summary-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+.summary-card p {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+/* ========== Games Section ========== */
+.games-section {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.games-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+.games-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.game-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .game-card:hover {
@@ -233,45 +269,131 @@ body {
   box-shadow: 0 6px 12px var(--shadow-color);
 }
 
-/* ========== Progress Section ========== */
-.progress-section {
-  width: 100%;
-  max-width: 1200px;
-  background: var(--secondary-color);
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 3px 6px var(--shadow-color);
-  text-align: center;
-  animation: fadeIn 0.6s ease-in-out;
+.game-card p {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
 }
 
-.progress-section h2 {
-  font-size: 1.3rem;
-  margin-bottom: 15px;
+/* ========== Charts Section ========== */
+.charts-section {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.charts-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+.charts-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.chart-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  text-align: center;
+}
+
+.chart-card h4 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
   color: var(--primary-color);
 }
 
-/* ========== Footer ========== */
-.footer {
-  background: var(--primary-color);
-  color: white;
+/* ========== Tasks Status Section ========== */
+.tasks-status-section {
+  margin-bottom: 30px;
   text-align: center;
-  padding: 15px;
-  margin-top: 30px;
-  font-size: 0.9rem;
-  border-radius: 5px;
-  width: 100vw;
 }
 
-/* ========== Animations ========== */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
+/* ========== Tasks List Section ========== */
+.tasks-list-section {
+  margin-bottom: 30px;
+  text-align: center;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.tasks-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.task-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px var(--shadow-color);
+}
+
+.task-card p {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+/* ========== Task & Family Forms ========== */
+.task-section,
+.family-section {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.task-section h3,
+.family-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input,
+select,
+button {
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+/* ========== Error Message Styles ========== */
+.error-message {
+  color: red;
+  font-weight: bold;
+  text-align: center;
 }

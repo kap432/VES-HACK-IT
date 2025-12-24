@@ -16,6 +16,11 @@ import Task from "./pages/Task";
 import AstrayGame from "./components/games/AstrayGame"; // Astray Game
 import TrafficRunGame from "./components/games/TrafficRunGame"; // Traffic Run Game
 import Profile from "./pages/Profile";
+import Chatroom from "./components/chatroom";
+import EDiary from "./pages/Ediary";
+import Stories from "./pages/Stories";
+import StoryGame from "./components/games/StoryGame"; // Our Story Game component
+import Leaderboard from "./pages/Leaderboard";
 
 function App() {
   return (
@@ -37,7 +42,12 @@ function App() {
         <Route path="/games/5" element={<AstrayGame />} />
         {/* Route for Traffic Run Game */}
         <Route path="/games/6" element={<TrafficRunGame />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/pages/profile" element={<Profile />} />
+        <Route path="/Chatroom" element={<Chatroom />} />
+        <Route path="/pages/Ediary" element={<EDiary />} />
+        <Route path="/pages/stories" element={<Stories />} />
+        <Route path="/games/7" element={<StoryGame />} /> {/* Route for Story Game */}
+        <Route path="/leaderboard" element={<Leaderboard />} />
       </Routes>
     </Router>
   );

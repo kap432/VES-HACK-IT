@@ -1,8 +1,11 @@
 /* Main container for the landing page */
 #landing-page {
-  width: 100vw; /* Full width of the viewport */
-  height: 100vh; /* Full height of the viewport */
-  display: flex; /* Flexbox for easy alignment */
+  width: 100vw;
+  /* Full width of the viewport */
+  height: 100vh;
+  /* Full height of the viewport */
+  display: flex;
+  /* Flexbox for easy alignment */
   flex-direction: column;
   z-index: 0;
   /* background-color: aqua; */
@@ -20,10 +23,12 @@
 #landing-image {
   width: 100%;
   height: 100vh;
-  position: relative; /* Allows us to position child elements inside this container */
-  background-image: url("/public/landing-bg.jpg"); /* Path from public directory */
-  background-size: cover; /* Ensure the image covers the entire container */
-  background-position: center; /* Center the background image */
+  position: relative;
+  background-image: url("/public/landing-bg.jpg");
+  background-color: white;
+  background-size: cover;
+  background-position: center -50%;
+  /* Adjust this value to move it down */
 }
 
 #landing-buttons {
@@ -51,15 +56,15 @@
 }
 
 #vayu {
-  color: #500071;
-  padding-left: 30px;
-  font-size: 8vw;
+  color: #4a0063;
+  padding-left: 23px;
+  font-size: 7vw;
 }
 
 #drishti {
   color: #500071;
-  font-size: 2vw;
-  padding-left: 30px;
+  font-size: 1.7vw;
+  padding-left: 34px;
 }
 
 #get-started {
@@ -69,7 +74,6 @@
   height: 66px;
   padding: 30px 0px;
   /* padding-left: 40px; */
-
   /* background-color: chartreuse; */
 }
 
@@ -123,46 +127,18 @@
   text-align: center;
 }
 
-#reason-1 {
-  width: 50%;
-  height: 100%;
-  /* background-color: blue; */
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-#reason-2 {
-  width: 50%;
-  height: 100%;
-  /* background-color: rgb(56, 186, 186); */
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-#reason-3 {
-  width: 50%;
-  height: 100%;
-  /* background-color: rgb(119, 119, 224); */
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
+#reason-1,
+#reason-2,
+#reason-3,
 #reason-4 {
   width: 50%;
   height: 100%;
-  /* background-color: rgb(104, 186, 56); */
   color: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  /* background-color: different for each if needed */
 }
 
 .symbol {
@@ -196,47 +172,36 @@
   font-size: 4vw;
 }
 
-#signup_work {
+#signup_work,
+#choose_game,
+#play_n_enjoy,
+#track_progress {
   width: 68%;
   height: 18%;
-  background: linear-gradient(to left, #ffffff 0%, #ffffff 48%, #add8e6 100%);
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   border-radius: 15px;
+  padding: 0 15px;
+}
+
+#signup_work {
+  background: linear-gradient(to left, #ffffff 0%, #ffffff 48%, #add8e6 100%);
   padding-left: 15px;
 }
 
 #choose_game {
-  width: 68%;
-  height: 18%;
   background: linear-gradient(to right, #ffffff 0%, #ffffff 59%, #90ee90 100%);
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  border-radius: 15px;
   padding-right: 15px;
 }
 
 #play_n_enjoy {
-  width: 68%;
-  height: 18%;
   background: linear-gradient(to left, #ffffff 0%, #ffffff 59%, #ffa07a 100%);
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  border-radius: 15px;
   padding-left: 15px;
 }
 
 #track_progress {
-  width: 68%;
-  height: 18%;
   background: linear-gradient(to right, #ffffff 0%, #ffffff 59%, #9f9ffa 100%);
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  border-radius: 15px;
   padding-right: 15px;
 }
 
@@ -250,13 +215,15 @@
   font-size: 5vw;
   background-color: transparent;
   position: relative;
-  border: solid 5px transparent; /* Fallback for browsers that don't support masking */
+  border: solid 5px transparent;
+  /* Fallback for browsers that don't support masking */
 }
 
 .circle::before {
   content: "";
   position: absolute;
-  inset: -6px; /* Slightly larger to enhance the border visibility */
+  inset: -6px;
+  /* Slightly larger to enhance the border visibility */
   border-radius: 50%;
   padding: 6px;
   background: var(--border-gradient);
@@ -276,12 +243,15 @@
 #circle_1 {
   --border-gradient: linear-gradient(135deg, #21a5d1, #52badc, #79c8e2);
 }
+
 #circle_2 {
   --border-gradient: linear-gradient(135deg, #34ab34, #52f052);
 }
+
 #circle_3 {
   --border-gradient: linear-gradient(135deg, #c76843, #ffa07a);
 }
+
 #circle_4 {
   --border-gradient: linear-gradient(135deg, #3d5afe, #304ffe, #1a237e);
 }
@@ -289,4 +259,135 @@
 .how_content {
   font-size: 2.5vw;
   /* background-color: #00C9A7; */
+}
+
+/* ========= MOBILE RESPONSIVENESS ========= */
+/* ========= MOBILE RESPONSIVENESS ========= */
+@media (max-width: 768px) {
+
+  /* Adjust header and button container for mobile */
+  #landing-header {
+    padding: 8px;
+    background-color: white;
+  }
+
+  /* Shift the background image down a bit more on mobile */
+    #landing-image {
+      background-repeat: no-repeat;
+      /* Prevents repetition */
+      background-position: center calc(50% + 200px);
+      /* Adjust offset as needed */
+    }
+
+  /* Reposition buttons so that REGISTER is left and LOGIN is right */
+  #landing-buttons {
+    width: 90%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    margin: 15px auto;
+  }
+
+  /* (Optional) Adjust individual button margins if needed */
+  #landing-buttons button {
+    margin: 0;
+  }
+
+  /* Adjust the site name and tagline */
+  #name-vayudrishti {
+    font-size: 7vh;
+    /* text-align: left; */
+    /* background-color: #304ffe; */
+    display: flex;
+    align-items: flex-start;
+    /* background-color: #21a5d1; */
+    padding-left: 45px;
+  }
+
+  #vayu {
+    font-size: 9vw;
+    padding-left: 5px;
+    
+  }
+
+  #drishti {
+    font-size: 3.2vw;
+    padding-left: 5px;
+  }
+
+  /* Adjust the get-started button container */
+  #get-started {
+    height: auto;
+    padding: 12px 0;
+    justify-content: flex-start;
+  }
+
+  /* Next scroll sections height and spacing */
+  #nextscroll_1,
+  #nextscroll_2 {
+    height: auto;
+    padding: 25px 0;
+  }
+
+  /* Why Choose Us section adjustments */
+  #whychoseus {
+    width: 90%;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  #why {
+    font-size: 4.5vw;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .reason-rows {
+    flex-direction: column;
+    font-size: 3vw;
+    text-align: center;
+  }
+
+  #reason-1,
+  #reason-2,
+  #reason-3,
+  #reason-4 {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  #reason-1{
+    display: flex;
+    justify-items: flex-start;
+  }
+
+  /* How It Works section adjustments */
+  #how_works {
+    font-size: 5.5vw;
+    width: 85%;
+    text-align: center;
+  }
+
+  #signup_work,
+  #choose_game,
+  #play_n_enjoy,
+  #track_progress {
+    width: 85%;
+    padding: 8px;
+    flex-direction: column;
+    align-items: center;
+    margin: 12px 0;
+  }
+
+  .circle {
+    width: 14vw;
+    height: 14vw;
+    font-size: 7.5vw;
+    margin-bottom: 8px;
+  }
+
+  .how_content {
+    font-size: 3.8vw;
+    text-align: center;
+  }
 }

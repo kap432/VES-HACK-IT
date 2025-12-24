@@ -55,4 +55,35 @@ router.get("/:patientId", authMiddleware, async (req, res) => {
   }
 });
 
+// PATCH /api/tasks/status/:taskId - Update task status (mark as completed)
+// Allow update if user is a guardian OR if the task belongs to the logged in patient.
+router.patch("/status/:taskId", authMiddleware, async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { completed } = req.body; // expects a boolean value
+
+    // Find the task
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({ msg: "Task not found." });
+    }
+
+    // Check if the logged-in user is either a guardian or the owner of the task
+    if (req.user.role !== "guardian" && req.user.id !== task.user.toString()) {
+      return res.status(403).json({
+        msg: "Access denied. You are not allowed to update this task status.",
+      });
+    }
+
+    // Update the task's status
+    task.completed = completed;
+    await task.save();
+
+    res.json({ msg: "Task status updated successfully", task });
+  } catch (error) {
+    console.error("Error updating task status:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
 module.exports = router;

@@ -1,23 +1,61 @@
-import React, { useState, useEffect } from "react";
+// src/components/PatientGames.js
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom"; // Added useParams, useNavigate, and Link
+import { io } from "socket.io-client"; // Import socket.io-client
+import { Bar, Line, Pie, Doughnut } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import "./PatientGames.css"; // Optional for styling
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend
+);
+
+const socket = io("http://localhost:5000"); // Connect to backend WebSocket server
 
 const PatientGames = () => {
   const { patientId } = useParams(); // Get the patient ID from URL
   const [gamesData, setGamesData] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [assignMessage, setAssignMessage] = useState("");
+  const [notifications, setNotifications] = useState([]); // Store real-time notifications
   const token = localStorage.getItem("token");
 
   // Family form states
+  const [familyFile, setFamilyFile] = useState(null);
   const [familyName, setFamilyName] = useState("");
   const [familyRelation, setFamilyRelation] = useState("");
   const [familyImageUrl, setFamilyImageUrl] = useState("");
   const [familyMessage, setFamilyMessage] = useState("");
+  const [progressSummary, setProgressSummary] = useState({
+    totalGames: 0,
+    totalScore: 0,
+    averageScore: 0,
+    bestScore: 0,
+    totalTime: 0,
+  });
 
   // Dropdown options for family relations
   const relationOptions = [
@@ -35,6 +73,8 @@ const PatientGames = () => {
     "Baby-Cousin",
   ];
 
+  const navigate = useNavigate();
+
   // Function to fetch game progress for the patient
   const fetchPatientGames = async () => {
     try {
@@ -44,6 +84,7 @@ const PatientGames = () => {
       );
       setGamesData(res.data);
       setErrorMessage("");
+      calculateProgressSummary(res.data);
     } catch (error) {
       console.error(
         "Error fetching patient games:",
@@ -53,7 +94,93 @@ const PatientGames = () => {
     }
   };
 
-  // Function to assign a task to the patient
+  // Fetch tasks function (for updating tasks list)
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/tasks/${patientId}`,
+        { headers: { "x-auth-token": token } }
+      );
+      setTasks(res.data);
+    } catch (error) {
+      console.error(
+        "Error fetching tasks:",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  useEffect(() => {
+    fetchPatientGames();
+
+    // Listen for real-time task notifications
+    socket.on(`taskNotification-${patientId}`, (message) => {
+      setNotifications((prev) => [...prev, message]); // Store new notifications
+    });
+
+    return () => {
+      socket.off(`taskNotification-${patientId}`);
+    };
+  }, [patientId, token]);
+
+  // Calculate overall progress summary from gamesData
+  const calculateProgressSummary = (data) => {
+    if (!data || data.length === 0) {
+      setProgressSummary({
+        totalGames: 0,
+        totalScore: 0,
+        averageScore: 0,
+        bestScore: 0,
+        totalTime: 0,
+      });
+      return;
+    }
+    const totalGames = data.length;
+    let totalScore = 0;
+    let bestScore = 0;
+    let totalTime = 0;
+    data.forEach((game) => {
+      totalScore += game.score;
+      if (game.score > bestScore) bestScore = game.score;
+      totalTime += game.totalTime;
+    });
+    const averageScore = totalScore / totalGames;
+    setProgressSummary({
+      totalGames,
+      totalScore,
+      averageScore,
+      bestScore,
+      totalTime,
+    });
+  };
+
+  // Format seconds into hours, minutes, seconds
+  const formatTime = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs > 0 ? hrs + " hrs " : ""}${mins > 0 ? mins + " min " : ""}${secs} sec`;
+  };
+
+  // Bar Chart: Tasks Status (Completed vs Remaining)
+  const getTasksChartData = () => {
+    const completedTasks = tasks.filter((task) => task.completed).length;
+    const remainingTasks = tasks.length - completedTasks;
+    return {
+      labels: ["Completed", "Remaining"],
+      datasets: [
+        {
+          label: "Tasks Status",
+          data: [completedTasks, remainingTasks],
+          backgroundColor: ["#4caf50", "#f44336"],
+          borderColor: ["#4caf50", "#f44336"],
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
+  // Handle Assign Task
   const handleAssignTask = async (e) => {
     e.preventDefault();
     try {
@@ -65,59 +192,177 @@ const PatientGames = () => {
       const res = await axios.post(
         `http://localhost:5000/api/tasks/${patientId}`,
         payload,
-        { headers: { "x-auth-token": token, "Content-Type": "application/json" } }
+        {
+          headers: {
+            "x-auth-token": token,
+            "Content-Type": "application/json",
+          },
+        }
       );
       setAssignMessage(res.data.msg);
-      // Clear the form fields
+      socket.emit("newTaskAssigned", { patientId, message: res.data.msg });
+      await fetchTasks();
+
+      // Fetch the user's mobile number for SMS notification
+      const userRes = await axios.get(
+        `http://localhost:5000/api/users/${patientId}`,
+        { headers: { "x-auth-token": token } }
+      );
+      const userMobile = userRes.data.mobile;
+      const smsPayload = {
+        phone: userMobile,
+        message: `New task assigned: ${taskDescription} from ${startTime} to ${endTime}`,
+      };
+      await axios.post("http://localhost:5000/api/notifications/send-sms", smsPayload, {
+        headers: { "x-auth-token": token },
+      });
       setTaskDescription("");
       setStartTime("");
       setEndTime("");
     } catch (error) {
-      console.error(
-        "Error assigning task:",
-        error.response?.data || error.message
-      );
+      console.error("Error assigning task:", error.response?.data || error.message);
       setAssignMessage("Failed to assign task.");
     }
   };
 
-  // Function to add a family member record for the patient
   const handleAddFamilyMember = async (e) => {
     e.preventDefault();
     try {
-      const payload = {
-        name: familyName,
-        relation: familyRelation,
-        imageUrl: familyImageUrl,
-      };
+      const formData = new FormData();
+      formData.append("name", familyName);
+      formData.append("relation", familyRelation);
+      // Append the file if available and log the action
+      if (familyFile) {
+        formData.append("imageFile", familyFile);
+        console.log("Appending file to formData:", familyFile.name);
+      } else {
+        console.log("No file selected.");
+      }
+      // Log formData keys (for debugging purposes)
+      for (let key of formData.keys()) {
+        console.log("FormData key:", key);
+      }
+  
       const res = await axios.post(
         `http://localhost:5000/api/family/${patientId}`,
-        payload,
-        { headers: { "x-auth-token": token, "Content-Type": "application/json" } }
+        formData,
+        { headers: { "x-auth-token": token, "Content-Type": "multipart/form-data" } }
       );
+      console.log("Family member added:", res.data);
       setFamilyMessage(res.data.msg);
-      // Clear the family form fields
       setFamilyName("");
       setFamilyRelation("");
       setFamilyImageUrl("");
+      setFamilyFile(null);
     } catch (error) {
-      console.error(
-        "Error adding family record:",
-        error.response?.data || error.message
-      );
+      console.error("Error adding family record:", error.response?.data || error.message);
       setFamilyMessage("Failed to add family record.");
     }
   };
+  
 
   useEffect(() => {
     fetchPatientGames();
   }, [patientId]);
 
+  // Chart Data Functions
+  const getLineChartData = () => ({
+    labels: gamesData.map((game) => new Date(game.timestamp).toLocaleDateString()),
+    datasets: [
+      {
+        label: "Scores Over Time",
+        data: gamesData.map((game) => game.score),
+        borderColor: "blue",
+        backgroundColor: "rgba(0, 0, 255, 0.1)",
+        fill: true,
+        tension: 0.3,
+      },
+    ],
+  });
+
+  const getBarChartData = () => ({
+    labels: gamesData.map((game) => game.gameName),
+    datasets: [
+      {
+        label: "Total Play Time (seconds)",
+        data: gamesData.map((game) => game.totalTime),
+        backgroundColor: "rgba(54, 162, 235, 0.5)",
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1,
+      },
+    ],
+  });
+
+  const getPieChartData = () => {
+    const completedCount = gamesData.filter((game) => game.completed).length;
+    const notCompletedCount = gamesData.length - completedCount;
+    return {
+      labels: ["Completed", "Not Completed"],
+      datasets: [
+        {
+          data: [completedCount, notCompletedCount],
+          backgroundColor: ["#4caf50", "#f44336"],
+        },
+      ],
+    };
+  };
+
+  const getDoughnutChartData = () => {
+    const gameCount = {};
+    gamesData.forEach((game) => {
+      gameCount[game.gameName] = (gameCount[game.gameName] || 0) + 1;
+    });
+    return {
+      labels: Object.keys(gameCount),
+      datasets: [
+        {
+          data: Object.values(gameCount),
+          backgroundColor: [
+            "#FF6384",
+            "#36A2EB",
+            "#FFCE56",
+            "#8BC34A",
+            "#FF9800",
+            "#9C27B0",
+            "#00BCD4",
+          ],
+        },
+      ],
+    };
+  };
+
   return (
     <div className="patient-games">
       <h2>Game Details for Patient</h2>
       {errorMessage && <p className="error-message">{errorMessage}</p>}
-      
+
+      {/* Overall Progress Summary */}
+      <section className="progress-summary">
+        <h2>Overall Progress Summary</h2>
+        <div className="summary-cards">
+          <div className="summary-card">
+            <h3>Total Games</h3>
+            <p>{progressSummary.totalGames}</p>
+          </div>
+          <div className="summary-card">
+            <h3>Total Score</h3>
+            <p>{progressSummary.totalScore}</p>
+          </div>
+          <div className="summary-card">
+            <h3>Average Score</h3>
+            <p>{progressSummary.averageScore.toFixed(2)}</p>
+          </div>
+          <div className="summary-card">
+            <h3>Best Score</h3>
+            <p>{progressSummary.bestScore}</p>
+          </div>
+          <div className="summary-card">
+            <h3>Total Time</h3>
+            <p>{formatTime(progressSummary.totalTime)}</p>
+          </div>
+        </div>
+      </section>
+
       {gamesData.length > 0 ? (
         <div className="games-list">
           {gamesData.map((game) => (
@@ -138,6 +383,60 @@ const PatientGames = () => {
         <p>No game progress data found for this patient.</p>
       )}
 
+      <hr />
+
+      {/* Charts Section */}
+      <section className="charts-section">
+        <h3>Game Progress Charts</h3>
+        <div className="charts-container">
+          <div className="chart-card">
+            <h4>Scores Over Time</h4>
+            <Line data={getLineChartData()} />
+          </div>
+          <div className="chart-card">
+            <h4>Total Play Time by Game</h4>
+            <Bar
+              data={getBarChartData()}
+              options={{
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 5 },
+                    title: { display: true, text: "Seconds" },
+                  },
+                },
+              }}
+            />
+          </div>
+          <div className="chart-card">
+            <h4>Game Completion Ratio</h4>
+            <Pie data={getPieChartData()} />
+          </div>
+          <div className="chart-card">
+            <h4>Games Played Distribution</h4>
+            <Doughnut data={getDoughnutChartData()} />
+          </div>
+        </div>
+      </section>
+
+      {/* Tasks Status Section (Bar Graph) */}
+      <section className="tasks-status-section">
+        <h3>Tasks Status</h3>
+        <div className="chart-card">
+          <Bar
+            data={getTasksChartData()}
+            options={{
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { stepSize: 1 },
+                  title: { display: true, text: "Number of Tasks" },
+                },
+              },
+            }}
+          />
+        </div>
+      </section>
       <hr />
 
       {/* Task Assignment Section */}
@@ -165,6 +464,32 @@ const PatientGames = () => {
         />
         <button type="submit">Assign Task</button>
       </form>
+      <hr />
+
+      {/* Assigned Tasks List (Card Format) */}
+      <section className="tasks-list-section">
+        <h3>Assigned Tasks</h3>
+        <div className="tasks-list">
+          {tasks.length > 0 ? (
+            tasks.map((task) => (
+              <div className="task-card" key={task.id || task._id}>
+                <p>
+                  <strong>Description:</strong> {task.taskDescription}
+                </p>
+                <p>
+                  <strong>Time:</strong> {task.startTime} - {task.endTime}
+                </p>
+                <p>
+                  <strong>Status:</strong>{" "}
+                  {task.completed ? "Completed" : "Remaining"}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p>No tasks assigned yet.</p>
+          )}
+        </div>
+      </section>
 
       <hr />
 
@@ -172,7 +497,6 @@ const PatientGames = () => {
       <h3>Add Family Member</h3>
       {familyMessage && <p>{familyMessage}</p>}
       <form onSubmit={handleAddFamilyMember} className="family-form">
-        {/* Patient ID is already known (patientId from URL) */}
         <p><strong>Patient ID:</strong> {patientId}</p>
         <label>
           Relation:
@@ -198,14 +522,19 @@ const PatientGames = () => {
           />
         </label>
         <label>
-          Image URL:
-          <input
-            type="text"
-            placeholder="Image URL (Optional)"
-            value={familyImageUrl}
-            onChange={(e) => setFamilyImageUrl(e.target.value)}
-          />
-        </label>
+  Upload Image:
+  <input
+    type="file"
+    name="imageFile"
+    accept="image/*"
+    onChange={(e) => {
+      const file = e.target.files[0];
+      console.log("Selected file:", file);
+      setFamilyFile(file);
+    }}
+  />
+</label>
+
         <button type="submit">Add Family Member</button>
       </form>
     </div>
